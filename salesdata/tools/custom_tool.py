@@ -7,17 +7,20 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
 import os
+import psycopg2
 
 def connect_to_sql_server():
     conn = (
-    "DRIVER={ODBC Driver 17 for SQL Server};"
-    "SERVER=localhost;"  # Use 'localhost' for local SQL Server instance or replace with your server address
-    "DATABASE=testing;"  # Replace with your database name
-    "Trusted_Connection=yes;"  # This enables Windows Authentication
-)
-    connection = pyodbc.connect(conn)
+        "dbname='test' "  # Replace with your database name
+        "user='postgres' "  # Replace with your PostgreSQL username
+        "password='admin' "  # Replace with your PostgreSQL password
+        "host='localhost' "  # PostgreSQL server host (local)
+        "port='5432'"  # PostgreSQL default port
+    )
+    connection = psycopg2.connect(conn)
 
     return connection
+    
 
 def fetch_sales_data(query):
     conn = connect_to_sql_server()

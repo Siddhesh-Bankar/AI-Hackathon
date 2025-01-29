@@ -6,9 +6,16 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from crewai import LLM
 from crewai_tools import PDFSearchTool
 import warnings
+import re
 warnings.simplefilter("ignore", ResourceWarning)
 
-def getnl2sqlQuery():
+def clean_query(query):
+    if isinstance(query, str):
+        # Remove backticks (`) and triple backticks (```)
+        return re.sub(r'[`]+', '', query).strip()
+    return query
+
+def getnl2sqlQuery(query_input):
     os.environ["GOOGLE_API_KEY"] = "AIzaSyDUwyyNh6Yg50MveTLWmEQLl7NhwB6s7xA"
     genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 
@@ -38,7 +45,7 @@ def getnl2sqlQuery():
     query_task = Task(
         description="Convert the following natural language query to SQL",
         agent=sql_agent,
-        expected_output="A valid SQL query give strict in string format only dont include keyword like ```sql and ending with ```",
+        expected_output="A valid SQL query give strict in string format only without the sql keyword",
         llm=llm
     )
 
@@ -49,10 +56,18 @@ def getnl2sqlQuery():
     )
 
     # Example usage
-    user_query = "Can you give me the name of sales person who has total highest sales amount generated in first month"
+    user_query = query_input
 
     query_task.description = f"Convert the following natural language query to SQL: {user_query}"
     print(user_query)
     result = crew.kickoff()
-    print(result)
-    return result
+     # Extract the actual SQL query from the CrewOutput object
+    if hasattr(result, 'raw_output'):  # If the attribute name is raw_output
+        nl2sqlquery = result.raw_output
+    else:
+        nl2sqlquery = str(result)  # Fallback to string conversion
+
+    # Clean up unwanted characters (remove backticks)
+    cleaned_result = clean_query(nl2sqlquery)
+    print(cleaned_result)
+    return cleaned_result
