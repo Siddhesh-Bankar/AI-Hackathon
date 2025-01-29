@@ -1,5 +1,6 @@
 import pandas as pd
 from tools.custom_tool import fetch_sales_data, generate_insights,send_email
+from tools.nl2sqltask import getnl2sqlQuery
 from tools.crew import create_agent
 
 def main():
@@ -7,7 +8,8 @@ def main():
     agent = create_agent()
 
     # Fetch sales data
-    query = "SELECT salesperson, region, product, sales, week, month FROM sales_data"
+    query = getnl2sqlQuery()
+    print(query)
     sales_data = fetch_sales_data(query)
 
     # Generate insights

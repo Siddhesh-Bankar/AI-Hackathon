@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from tools.custom_tool import fetch_sales_data, generate_insights
+from tools.nl2sqltask import getnl2sqlQuery
 
 st.set_page_config(page_title="Sales Data Insights", page_icon="📈", layout="wide")
 
@@ -51,7 +52,9 @@ Explore and analyze your sales data with interactive charts, key metrics, and in
 
 with st.sidebar:
     st.header("Analysis Options")
-    query_input = st.text_area("Enter SQL Query", "SELECT salesperson, region, product, sales, week, month, getDate() as Today FROM sales_data", height=150)
+    nl2sqlquery=getnl2sqlQuery()
+    print(nl2sqlquery)
+    query_input = st.text_area("Enter SQL Query", nl2sqlquery, height=150)
     if st.button("Fetch Data"):
         st.session_state.query = query_input
         try:
