@@ -1,0 +1,11 @@
+gemini_api_key: "AIzaSyDhhY7uBPxlBfC4jcwomaC3zSh12X-eIcI"
+agents:
+  - name: SalesInsightsAgent
+    description: Analyze sales data and generate insights.
+    tools:
+      - text_to_sql
+      - insights_generator
+
+
+      
+      

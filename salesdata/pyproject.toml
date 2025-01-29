@@ -1,0 +1,23 @@
+[project]
+name = "salesdata"
+version = "0.1.0"
+description = "salesdata using crewAI"
+authors = [{ name = "Pooja", email = "shelarpooja21@gmail.com" }]
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "crewai[tools]>=0.98.0,<1.0.0"
+]
+
+[project.scripts]
+salesdata = "salesdata.main:run"
+run_crew = "salesdata.main:run"
+train = "salesdata.main:train"
+replay = "salesdata.main:replay"
+test = "salesdata.main:test"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.crewai]
+type = "crew"
