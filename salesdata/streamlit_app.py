@@ -4,76 +4,78 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from tools.custom_tool import fetch_sales_data, generate_insights
 from tools.nl2sqltask import getnl2sqlQuery
-import re
+from tools.insighttask import getInsights
 
+# Set page config FIRST
 st.set_page_config(page_title="Sales Data Insights", page_icon="📈", layout="wide")
 
 # Custom CSS for styling
 st.markdown(
     """
     <style>
-    .main .block-container {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
+    .main {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        max-width: 800px;
+        margin: auto;
     }
-    .stApp {
-        background-color: #f5f5f5;
-    }
-    .stDataFrame {
-        border: 1px solid #ddd;
-        border-radius: 5px;
-    }
-    .stMetric {
-        background-color: white;
-        padding: 10px;
-        border-radius: 5px;
-        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-    }
-    .stPlot {
-        background-color: white;
-        padding: 10px;
-        border-radius: 5px;
-        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-        margin-bottom: 1rem;
-    }
-    .css-1adrpw5 {
-        background-color: #f0f2f6;
-        border: 1px solid #ddd;
-    }
+    
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-st.title("Sales Data Insights Dashboard")
+# Title and description
+st.title("Sales Data Insights Chat")
+st.write("Chat with the app to explore and analyze your sales data with interactive charts, key metrics, and insightful summaries.")
 
-st.write("Explore and analyze your sales data with interactive charts, key metrics, and insightful summaries.")
 
-with st.sidebar:
-    st.header("Analysis Options")
-    # Take user input for the SQL query
-    query_input = st.text_area("Enter SQL Query", "", height=150)
+# Initialize chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-    if st.button("Fetch Data"):
-        if query_input.strip():  # Ensure that the input is not empty
+# Display chat messages from history on app rerun
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# Accept user input
+if prompt := st.chat_input("Enter your query or command"):
+    # Add user message to chat history
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    # Display user message in chat message container
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    # Process the user input
+    if prompt.strip():  # Ensure that the input is not empty
+        try:
             # Pass the input query to getnl2sqlQuery function
-            nl2sqlquery = getnl2sqlQuery(query_input)
+            nl2sqlquery = getnl2sqlQuery(prompt)
             st.session_state.query = nl2sqlquery  # Store the result in session state
 
-            try:
-                # Now use the modified query (nl2sqlquery) to fetch the data
-                sales_data = fetch_sales_data(nl2sqlquery)
-                st.session_state.sales_data = sales_data
-                st.success("Data fetched successfully!")
-            except Exception as e:
-                st.error(f"Error fetching data: {e}")
-        else:
-            st.error("Please enter a SQL query.")
-            
+            # Now use the modified query (nl2sqlquery) to fetch the data
+            sales_data = fetch_sales_data(nl2sqlquery)
+            st.session_state.sales_data = sales_data
+            response = "Data fetched successfully!"
+        except Exception as e:
+            response = f"Error fetching data: {e}"
+    else:
+        response = "Please enter a SQL query."
+
+    # Display assistant response in chat message container
+    with st.chat_message("assistant"):
+        st.markdown(response)
+    # Add assistant response to chat history
+    st.session_state.messages.append({"role": "assistant", "content": response})
+
+# Display sales data and insights if available
 if "sales_data" in st.session_state:
     sales_data = st.session_state.sales_data
 
-    # 🛠 Ensure 'sales' column is numeric
+    # Ensure 'sales' column is numeric
     if 'sales' in sales_data.columns:
         sales_data['sales'] = pd.to_numeric(sales_data['sales'], errors='coerce')
 
@@ -81,7 +83,7 @@ if "sales_data" in st.session_state:
         st.subheader("Sales Data")
         st.data_editor(sales_data, num_rows="dynamic")
 
-        # 🛠 Display Key Metrics
+        # Display Key Metrics
         if 'sales' in sales_data.columns:
             col1, col2, col3 = st.columns(3)
             with col1:
@@ -91,7 +93,7 @@ if "sales_data" in st.session_state:
             with col3:
                 st.metric("Number of Transactions", len(sales_data))
 
-        # 📊 Sales Analysis
+        # Sales Analysis
         st.subheader("Sales Analysis")
 
         if 'region' in sales_data.columns and 'sales' in sales_data.columns:
@@ -118,8 +120,11 @@ if "sales_data" in st.session_state:
     if st.button("Generate Insights"):
         with st.spinner("Generating insights..."):
             insights = generate_insights(sales_data)
+            insightsfromcrew=getInsights(sales_data)
             st.subheader("Generated Insights")
             st.write(insights)
+            st.subheader("Generated Insights from crew ai")
+            st.write(insightsfromcrew)
 
 else:
-    st.info("Enter a SQL query to fetch data.")
+    st.info("Enter a query to fetch data.")

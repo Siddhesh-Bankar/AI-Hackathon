@@ -8,18 +8,17 @@ from email.mime.base import MIMEBase
 from email import encoders
 import os
 import psycopg2
+import pymssql
 
 def connect_to_sql_server():
-    conn = (
-        "dbname='test' "  # Replace with your database name
-        "user='postgres' "  # Replace with your PostgreSQL username
-        "password='admin' "  # Replace with your PostgreSQL password
-        "host='localhost' "  # PostgreSQL server host (local)
-        "port='5432'"  # PostgreSQL default port
+    conn = pymssql.connect(
+        server='arieotechdb.database.windows.net',  # Replace with your SQL Server host
+        user='Intelligent4SPTeam',  # Replace with your SQL Server username
+        password='6xLVPIauw9YNFdv',  # Replace with your SQL Server password
+        database='Hackathon-Master-Database'  # Replace with your database name
     )
-    connection = psycopg2.connect(conn)
+    return conn
 
-    return connection
     
 
 def fetch_sales_data(query):
