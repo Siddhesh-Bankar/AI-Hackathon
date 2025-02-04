@@ -1,0 +1,43 @@
+research_task:
+  description: >
+    Conduct a thorough research about {topic}
+    Make sure you find any interesting and relevant information given
+    the current year is 2024.
+  expected_output: >
+    A list with 10 bullet points of the most relevant information about {topic}
+  agent: researcher
+
+reporting_task:
+  description: >
+    Review the context you got and expand each topic into a full section for a report.
+    Make sure the report is detailed and contains any and all relevant information.
+  expected_output: >
+    A fully fledge reports with the mains topics, each with a full section of information.
+    Formatted as markdown without '```'
+  agent: reporting_analyst
+  output_file: report.md
+
+# tasks:
+#   - name: upload_csv_task
+#     description: >
+#       Upload a CSV file, parse the data, and insert it into the database table.
+#       Ensure all fields match the database schema and handle any potential errors during the upload.
+#     expected_output: >
+#       Confirmation message indicating the number of records successfully inserted into the table.
+#     agent: upload_agent
+
+#   - name: fetch_sales_data_task
+#     description: >
+#       Fetch sales data from the database using the provided SQL query.
+#       The query should return relevant information to perform sales analysis.
+#     expected_output: >
+#       A Pandas DataFrame containing the fetched sales data.
+#     agent: fetch_data_agent
+
+#   - name: send_email_report_task
+#     description: >
+#       Compose and send an email containing the sales data and analysis.
+#       Include charts and insights generated from the data, ensuring the email format is correct.
+#     expected_output: >
+#       A success message indicating that the email has been successfully sent with all relevant attachments.
+#     agent: email_agent
