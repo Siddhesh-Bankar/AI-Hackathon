@@ -1,4 +1,4 @@
-from crewai import Agent, Task, Crew
+from crewai import Agent, Task, Crew, Process, LLM
 from crewai_tools import NL2SQLTool
 import os
 import google.generativeai as genai
@@ -15,15 +15,16 @@ os.environ["OTEL_SDK_DISABLED"] = "true"
 from dotenv import load_dotenv
 
 load_dotenv()
-
-os.environ["OPENAI_API_KEY"] = os.getenv("AZURE_API_KEY")
-os.environ["AZURE_API_KEY"] = os.getenv("AZURE_API_KEY")
-os.environ["AZURE_API_BASE"] = os.getenv("AZURE_API_BASE")
-os.environ["AZURE_API_VERSION"] = os.getenv("AZURE_API_VERSION")
-print("Using API Key:", os.getenv("AZURE_API_KEY")) 
-print("Using API Key:", os.getenv("AZURE_API_BASE"))
-print("Using API Key:", os.getenv("AZURE_API_VERSION")) # Mask for security
-print("Using API Key:", os.getenv("AZURE_API_KEY"))  # Mask for security
+os.environ["GOOGLE_API_KEY"] = "AIzaSyDSq_Lhr8Jt5Wvcd7Uh_VcmhlKyGDfq3uk"
+genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
+# os.environ["OPENAI_API_KEY"] = os.getenv("AZURE_API_KEY")
+# os.environ["AZURE_API_KEY"] = os.getenv("AZURE_API_KEY")
+# os.environ["AZURE_API_BASE"] = os.getenv("AZURE_API_BASE")
+# os.environ["AZURE_API_VERSION"] = os.getenv("AZURE_API_VERSION")
+# print("Using API Key:", os.getenv("AZURE_API_KEY")) 
+# print("Using API Key:", os.getenv("AZURE_API_BASE"))
+# print("Using API Key:", os.getenv("AZURE_API_VERSION")) # Mask for security
+# print("Using API Key:", os.getenv("AZURE_API_KEY"))  # Mask for security
 def clean_query(query):
     if isinstance(query, str):
         # Remove backticks (`) and triple backticks (```)
@@ -52,8 +53,8 @@ def getInsights(query_input):
         role="Sales Insights Generator",
         goal="Generate insightful analysis from the sales data based on user queries.",
         backstory=(
-        "I am an AI assistant trained to analyze sales data and generate actionable insights. I work primarily with the 'sales_data' "
-        "and 'product_data' tables to extract meaningful patterns and trends. I am familiar with the structure of these tables, "
+        "I am an AI assistant trained to analyze sales data and generate actionable insights. I work primarily with the '[Intelligent4SPTeam].[sales_data]' "
+        "and '[Intelligent4SPTeam].[product_data]' tables to extract meaningful patterns and trends. I am familiar with the structure of these tables, "
         "including key columns such as 'salesperson', 'region', 'product_id', 'sales', 'week', and 'month'. My goal is to provide "
         "users with relevant insights, such as identifying top-performing products, comparing sales across regions, or tracking sales "
         "trends over time. When asked for insights, I will analyze the data and ensure the results are actionable and easy to interpret. "
@@ -74,11 +75,12 @@ def getInsights(query_input):
         "give insights with Bold text and emoji format"
     )
 
-
+   
     # Create a Crew and execute the task
     crew = Crew(
         agents=[insights_agent],
-        tasks=[insights_task]
+        tasks=[insights_task],
+     
     )
 
     # Example usage
@@ -87,25 +89,13 @@ def getInsights(query_input):
     result = crew.kickoff()
     
     print(result)
-    if 'Top Salesperson' in result:
-        print(f"Kudos email can be sent to {result['Top Salesperson']} at {result['Salesperson Mail']}")
-    # Optionally, render a button for the user interface:
-        print(f"<button onclick='send_kudos_email({result['Salesperson Mail']})'>Send Kudos Email</button>")
-
-        # Send kudos email when button is clicked (you can call this function when the user clicks the button)
-        kudos_subject = f"Kudos to {result['top_salesperson']} for being the top salesperson!"
-        kudos_body = f"Dear {result['top_salesperson']},\n\nCongratulations on being the top salesperson in the {query_input['region']} region for the selected period. Keep up the great work!"
-        
-        # Call the function to send an email
-        # send_email(result['top_salesperson_mail'], kudos_subject, kudos_body)
-        print(f"Kudos email sent to {result['top_salesperson']} at {result['top_salesperson_mail']}")
      # Extract the actual SQL query from the CrewOutput object
-    if hasattr(result, 'raw_output'):  # If the attribute name is raw_output
-        nl2sqlquery = result.raw_output
-    else:
-        nl2sqlquery = str(result)  # Fallback to string conversion
+    # if hasattr(result, 'raw_output'):  # If the attribute name is raw_output
+    #     nl2sqlquery = result.raw_output
+    # else:
+    #     nl2sqlquery = str(result)  # Fallback to string conversion
 
-    # Clean up unwanted characters (remove backticks)
-    cleaned_result = clean_query(nl2sqlquery)
-    print(cleaned_result)
-    return cleaned_result
+    # # Clean up unwanted characters (remove backticks)
+    # cleaned_result = clean_query(nl2sqlquery)
+    print(result)
+    return result

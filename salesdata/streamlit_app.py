@@ -2,9 +2,12 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from tools.custom_tool import fetch_sales_data, generate_insights
+from tools.custom_tool import fetch_sales_data, generate_insights 
 from tools.nl2sqltask import getnl2sqlQuery
 from tools.insighttask import getInsights
+from tools.generatechart import getCharts
+from tools.csvrag import getCSVInsights
+import time
 
 # Set page config FIRST
 st.set_page_config(page_title="Sales Data Insights", page_icon="📈", layout="wide")
@@ -26,6 +29,13 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+def stream_result(formatted_output):
+    output_parts = formatted_output.split("\n")
+    
+    for part in output_parts:
+        yield part + "\n"
+        time.sleep(0.5)  # Simulate a delay between each chunk to mimic streaming
 
 # Title and description
 st.title("Sales Data Insights Chat")
@@ -119,12 +129,20 @@ if "sales_data" in st.session_state:
 
     if st.button("Generate Insights"):
         with st.spinner("Generating insights..."):
-            insights = generate_insights(sales_data)
+            # insights = generate_insights(sales_data)
             insightsfromcrew=getInsights(sales_data)
-            st.subheader("Generated Insights")
-            st.write(insights)
-            st.subheader("Generated Insights from crew ai")
-            st.write(insightsfromcrew)
+            # chartsfromcrew=getCharts(sales_data)
+            
+            # st.subheader("Generated Insights")
+            # st.write(insights)
+            # st.subheader("Generated Insights from crew ai")
+            # st.write(insightsfromcrew)
+            # st.write(chartsfromcrew)
+            csvinsights=getCSVInsights()
+            for chunk in stream_result(csvinsights):
+                st.write(chunk) 
+            
+            print(csvinsights)
 
 else:
     st.info("Enter a query to fetch data.")
