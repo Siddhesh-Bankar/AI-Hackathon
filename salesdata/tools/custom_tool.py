@@ -10,23 +10,45 @@ import os
 import psycopg2
 
 def connect_to_sql_server():
-    conn = (
-        "dbname='test' "  # Replace with your database name
-        "user='postgres' "  # Replace with your PostgreSQL username
-        "password='admin' "  # Replace with your PostgreSQL password
-        "host='localhost' "  # PostgreSQL server host (local)
-        "port='5432'"  # PostgreSQL default port
-    )
-    connection = psycopg2.connect(conn)
-
-    return connection
-    
+    """Establishes a connection to the SQL Server database."""
+    try:
+        conn = pyodbc.connect(
+            "DRIVER={ODBC Driver 17 for SQL Server};"
+            "SERVER=arieotechdb.database.windows.net;"  
+            "DATABASE=Hackathon-Master-Database;"  
+            "UID=Intelligent4SPTeam;"  
+            "PWD=6xLVPIauw9YNFdv;" 
+        )
+        return conn
+    except Exception as e:
+        print(f"Error connecting to SQL Server: {e}")
+        return None    
 
 def fetch_sales_data(query):
     conn = connect_to_sql_server()
     df = pd.read_sql(query, conn)
     conn.close()
     return df
+
+def insert_data_into_database(dataframe, table_name):
+    """Inserts a Pandas DataFrame into the specified SQL Server table."""
+    try:
+        conn = connect_to_sql_server()
+        cursor = conn.cursor()
+
+        columns = ", ".join(dataframe.columns)
+        placeholders = ", ".join(["?"] * len(dataframe.columns))
+        query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
+
+        data = [tuple(row) for row in dataframe.to_numpy()]
+
+        cursor.executemany(query, data)
+        conn.commit()
+        conn.close()
+
+        return f"Successfully inserted {len(dataframe)} rows into the table '{table_name}'."
+    except Exception as e:
+        return f"Error inserting data: {str(e)}"
 
 def generate_insights(sales_data):
     weekly_trend = sales_data.groupby("week")["sales"].sum()
@@ -40,61 +62,25 @@ def generate_insights(sales_data):
     plt.savefig("sales_trends.png")
     return {"weekly_trend": weekly_trend, "monthly_trend": monthly_trend}
 
-def send_email(insights, attachment_path):
-    """
-    Send an email with sales insights and a graph attachment.
-    """
-    sender_email = "shelarpooja21@gmail.com"  # Replace with your email
-    receiver_email = "shelarpooja21@gmail.com"  # Replace with recipient email
-    subject = "Weekly and Monthly Sales Insights"
-    smtp_server = "smtp.gmail.com"  # Replace with your SMTP server
-    smtp_port = 587
-    email_password = "Pooja@2104"  # Replace with your email password
-
-    # Email content
-    message = MIMEMultipart()
-    message["From"] = sender_email
-    message["To"] = receiver_email
-    message["Subject"] = subject
-
-    # Email body
-    body = f"""
-    Hi Team,
-
-    Please find the sales insights below:
-
-    Weekly Sales Trend:
-    {insights['weekly_trend']}
-
-    Monthly Sales Trend:
-    {insights['monthly_trend']}
-
-    The sales trends graph is attached for reference.
-
-    Best Regards,
-    Sales Analytics Team
-    """
-    message.attach(MIMEText(body, "plain"))
-
-    # Attach the graph
-    if os.path.exists(attachment_path):
-        with open(attachment_path, "rb") as attachment:
-            part = MIMEBase("application", "octet-stream")
-            part.set_payload(attachment.read())
-        encoders.encode_base64(part)
-        part.add_header("Content-Disposition", f"attachment; filename={os.path.basename(attachment_path)}")
-        message.attach(part)
-
-    # Send the email
+def authenticate_user(username, password):
+    """Authenticate a user against the 'users' table in the database."""
     try:
-        server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()
-        server.login(sender_email, email_password)
-        server.sendmail(sender_email, receiver_email, message.as_string())
-        print("Email sent successfully!")
+        conn = connect_to_sql_server()
+        cursor = conn.cursor()
+
+        # Query to fetch user details based on username and password
+        query = "SELECT username, password FROM Intelligent4SPTeam.users WHERE username = ? AND password = ?"
+        cursor.execute(query, (username, password))
+        user = cursor.fetchone()
+        conn.close()
+
+        if user:  # If the user exists in the database
+            return {"username": user[0]}  # Return the username (or any other user details)
+        else:
+            return None  # No matching user found
     except Exception as e:
-        print(f"Failed to send email: {e}")
-    finally:
-        server.quit()
+        print(f"Error authenticating user: {str(e)}")
+        return None
+
 
 
