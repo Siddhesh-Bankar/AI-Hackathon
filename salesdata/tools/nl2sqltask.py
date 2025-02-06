@@ -2,9 +2,7 @@ from crewai import Agent, Task, Crew
 from crewai_tools import NL2SQLTool
 import os
 import google.generativeai as genai
-from langchain_google_genai import ChatGoogleGenerativeAI
 from crewai import LLM
-from crewai_tools import PDFSearchTool
 import warnings
 import re
 from langchain_openai import AzureChatOpenAI

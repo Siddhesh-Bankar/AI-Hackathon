@@ -1,43 +1,69 @@
-
-import streamlit as st
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-from tools.custom_tool import fetch_sales_data, generate_insights, insert_data_into_database, authenticate_user
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.mime.image import MIMEImage
 import os
 import base64
 import time
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
+import pandas as pd
+import seaborn as sns
+import streamlit as st
+from pathlib import Path
+import matplotlib.pyplot as plt
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from email.mime.multipart import MIMEMultipart
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
 from tools.nl2sqltask import getnl2sqlQuery
 from tools.insighttask import getInsights
 from google.auth.transport.requests import Request
-from pathlib import Path
 from tools.csvrag import getCSVInsights
-import time
+from tools.custom_tool import fetch_sales_data, generate_insights, insert_data_into_database, authenticate_user
 
 
-
-st.set_page_config(page_title="Sales Data Insights", page_icon="📈", layout="centered")
+st.set_page_config(page_title="Sales Data Insights", page_icon="📈", layout="wide")
 
 # Custom CSS for styling
 st.markdown(
     """
     <style>
     .main {
-        display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         max-width: 800px;
         margin: auto;
     }
-    
+        
+    /* Custom CSS for st.markdown */
+    .stMarkdown h1 {
+        font-family: "Georgia";
+        font-size: 1.75rem;
+        font-weight: 700;
+        padding: 1.25rem 0px 1rem;
+        margin-left: 62%;
+        margin-top: 8%;
+        color: #fff;
+    }    
+
+    .st-emotion-cache-4uzi61 {
+        border: 2px solid rgb(255, 255, 255);
+        border-radius: 1.5rem;
+        padding: calc(-1px + 1rem);
+        height: 12%;
+        width: 33%;
+        margin-left: 62%;
+        margin-top: 1%;
+    }
+
+    .st-cv {
+    color: rgb(350, 10, 10);
+    }
+
+    .st-cn {
+        background-color: rgba(249, 249, 249, 0.14);
+        margin-left: 62%;
+        margin-right: 5%;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -97,17 +123,79 @@ def stream_result(formatted_output):
     for part in output_parts:
         yield part + "\n"
         time.sleep(0.5)  # Simulate a delay between each chunk to mimic streaming
+
+
 # Create login page using forms
-
 def login():
-    st.title("Login to Sales Data Insights! 🔑")
+    # Custom CSS for the login page
+    st.markdown("""
+    <style>
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background-image: url('https://www.commercient.com/wp-content/uploads/2019/12/deepLearning.gif');
+        background-size: cover;       
+        background-position: center center; 
+        background-repeat: no-repeat;  
+        background-attachment: fixed;  
+        font-family: 'Arial', sans-serif;
+    }
+    .stApp {
+        background-color: rgba(0, 0, 0, 0.5);
+        border-radius: 8px;
+        padding: 50px;
+    }
 
+    .css-1v3fvcr {
+        margin-bottom: 15px;
+    }
+
+    .stButton>button {
+        background-color: #FF5A5F;
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+        padding: 12px 24px;
+        border-radius: 5px;
+        border: none;
+    }
+    .stButton>button:hover {
+        background-color: #FF2A2F;
+    }
+
+    .stTextInput input {
+        background-color: #f5f5f5;
+        border-radius: 5px;
+        padding: 10px;
+    }
+
+    .stTextInput label {
+        color: #fff;
+    }
+    
+    .stTitle h1 {
+        font-family: "Arial", sans-serif;
+        font-size: 2.5rem;
+        color: #ff5a5f;
+        text-align: center;
+        padding-top: 20px;
+    }
+
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Title using HTML and custom class
+    st.markdown('<h1 class="stMarkdown">Login to Sales Data Insights! 🔑</h1>', unsafe_allow_html=True)
+    
+    
+    # Form for login
     with st.form(key="login_form"):
         username = st.text_input("Username 👤")
         password = st.text_input("Password 🔒", type="password")
-        
-        login_button = st.form_submit_button("Login ➡️")  
+        login_button = st.form_submit_button("Login ➡️")
 
+    # Authentication process
     if login_button:
         with st.spinner("Logging in..."):
             user_details = authenticate_user(username, password)
@@ -116,12 +204,12 @@ def login():
                 st.session_state.logged_in = True
                 st.session_state.username = user_details['username']
                 st.session_state.login_successful = True
-                st.success(f"Welcome, {username}! 🎉")
-                st.session_state.dashboard_redirect = True  
-                st.rerun()  
+                # st.success(f"Welcome, {username}! 🎉")
+                st.session_state.dashboard_redirect = True
+                st.rerun()
             else:
                 st.session_state.login_successful = False
-                st.error("Invalid username or password ❌") 
+                st.error("Invalid username or password ❌")
 
 # Main Dashboard Page (Only visible after login)
 def dashboard():
