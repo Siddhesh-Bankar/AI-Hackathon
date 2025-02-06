@@ -18,6 +18,9 @@ from tools.nl2sqltask import getnl2sqlQuery
 from tools.insighttask import getInsights
 from google.auth.transport.requests import Request
 from pathlib import Path
+from tools.csvrag import getCSVInsights
+import time
+
 
 
 st.set_page_config(page_title="Sales Data Insights", page_icon="📈", layout="centered")
@@ -88,7 +91,14 @@ def send_message(service, sender, to, subject, message_text):
     except HttpError as error:
         print(f'An error occurred: {error}')
 
+def stream_result(formatted_output):
+    output_parts = formatted_output.split("\n")
+    
+    for part in output_parts:
+        yield part + "\n"
+        time.sleep(0.5)  # Simulate a delay between each chunk to mimic streaming
 # Create login page using forms
+
 def login():
     st.title("Login to Sales Data Insights! 🔑")
 
@@ -242,12 +252,17 @@ def dashboard():
 
         if st.button("Generate Insights"):
             with st.spinner("Generating insights..."):
-                insights = generate_insights(sales_data)
+                # insights = generate_insights(sales_data)
                 insightsfromcrew = getInsights(sales_data)
-                st.subheader("Generated Insights")
-                st.write(insights)
+                # st.subheader("Generated Insights")
+                # st.write(insights)
                 st.subheader("Generated Insights from crew ai")
                 st.write(insightsfromcrew)
+                # csvinsights=getCSVInsights()
+                # for chunk in stream_result(csvinsights):
+                #     st.write(chunk) 
+                
+                # print(csvinsights)
 
 if "logged_in" not in st.session_state or not st.session_state.logged_in:
     login()
