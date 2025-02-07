@@ -16,8 +16,9 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from tools.nl2sqltask import getnl2sqlQuery
 from tools.insighttask import getInsights
+from tools.demand import getDemandedProducts
 from google.auth.transport.requests import Request
-from tools.csvrag import getCSVInsights
+# from tools.csvrag import getCSVInsights
 import time
 
 
@@ -180,10 +181,10 @@ def dashboard():
             st.markdown(response)
         st.session_state.messages.append({"role": "assistant", "content": response})
 
-    st.sidebar.subheader("Send Email Report 📄")
-    email_to = st.sidebar.text_input("Recipient Email")
-    email_subject = st.sidebar.text_input("Subject", "Sales Data Report")
-    email_body = st.sidebar.text_area("Additional Body Content", "Here is the sales data report.")
+    # st.sidebar.subheader("Send Email Report 📄")
+    # email_to = st.sidebar.text_input("Recipient Email")
+    # email_subject = st.sidebar.text_input("Subject", "Sales Data Report")
+    # email_body = st.sidebar.text_area("Additional Body Content", "Here is the sales data report.")
 
     if "sales_data" in st.session_state and st.session_state.sales_data is not None:
         sales_data = st.session_state.sales_data
@@ -212,7 +213,7 @@ def dashboard():
 
                 if 'region' in sales_data.columns and 'sales' in sales_data.columns:
                     fig1, ax1 = plt.subplots(figsize=(8, 6))
-                    sns.barplot(x='region', y='sales', data=sales_data, ax=ax1, palette="viridis")
+                    sns.barplot(x='region', y='sales', data=sales_data, ax=ax1, hue='region', palette="viridis", legend=False)
                     ax1.set_title('Sales by Region 📊', fontsize=16)
                     ax1.set_xlabel('Region 🌍', fontsize=12)
                     ax1.set_ylabel('Sales 💸', fontsize=12)
@@ -226,7 +227,7 @@ def dashboard():
                     sales_data['date'] = pd.to_datetime(sales_data['date'])
                     sales_data = sales_data.sort_values(by='date')
                     fig2, ax2 = plt.subplots(figsize=(8, 6))
-                    sns.lineplot(x='date', y='sales', data=sales_data, ax=ax2, palette="magma")
+                    sns.lineplot(x='date', y='sales', data=sales_data, ax=ax2, hue='date', palette="magma", legend=False)
                     ax2.set_title('Sales Over Time 📆', fontsize=16)
                     ax2.set_xlabel('Date 📅', fontsize=12)
                     ax2.set_ylabel('Sales 💵', fontsize=12)
@@ -262,10 +263,50 @@ def dashboard():
                 
                 # print(csvinsights)
 
+
+def demand():
+
+
+# Sample product data
+    products = [
+        {"name": "Product A", "quantity": 10, "manufacturer": "Company X"},
+        {"name": "Product B", "quantity": 5, "manufacturer": "Company Y"},
+        {"name": "Product C", "quantity": 15, "manufacturer": "Company Z"},
+        {"name": "Product D", "quantity": 8, "manufacturer": "Company W"},
+        {"name": "Product E", "quantity": 12, "manufacturer": "Company V"},
+    ]
+
+    st.title("📦 Product Ordering System")
+
+    # Loop through products and create boxes
+    for idx, product in enumerate(products):
+        with st.container():
+            st.markdown("---")  # Add a horizontal separator
+            col1, col2, col3, col4 = st.columns([3, 2, 3, 2])
+
+            with col1:
+                st.subheader(f"🛒 {product['name']}")
+
+            with col2:
+                st.write(f"**Quantity:** {product['quantity']}")
+
+            with col3:
+                st.write(f"**Manufacturer:** {product['manufacturer']}")
+
+            with col4:
+                if st.button(f"Order {idx+1}", key=f"order_{idx}"):
+                    st.success(f"✅ Order placed for {product['name']}!")
+
+    st.markdown("---")
+
 if "logged_in" not in st.session_state or not st.session_state.logged_in:
     login()
 elif st.session_state.get("dashboard_redirect", False):
-    dashboard()
+        page = st.sidebar.radio("Go to", ["Sales Chat", "Demand"])
+        if page == "Sales Chat":
+            dashboard()
+        elif page == "Demand":
+            demand()
 else:
     st.warning("Please log in to access the dashboard ⚠️.")
 

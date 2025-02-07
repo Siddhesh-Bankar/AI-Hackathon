@@ -20,10 +20,7 @@ load_dotenv()
 # os.environ["AZURE_API_KEY"] = os.getenv("AZURE_API_KEY")
 # os.environ["AZURE_API_BASE"] = os.getenv("AZURE_API_BASE")
 # os.environ["AZURE_API_VERSION"] = os.getenv("AZURE_API_VERSION")
-# print("Using API Key:", os.getenv("AZURE_API_KEY")) 
-# print("Using API Key:", os.getenv("AZURE_API_BASE"))
-# print("Using API Key:", os.getenv("AZURE_API_VERSION")) # Mask for security
-# print("Using API Key:", os.getenv("AZURE_API_KEY"))  # Mask for security
+
 os.environ["GOOGLE_API_KEY"] = "AIzaSyDSq_Lhr8Jt5Wvcd7Uh_VcmhlKyGDfq3uk"
 genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 
@@ -39,8 +36,8 @@ def getnl2sqlQuery(query_input):
     # llm = AzureChatOpenAI(
     #     azure_endpoint='https://prasa-m6jgverq-eastus2.cognitiveservices.azure.com/openai/deployments/gpt-4o-mini/chat/completions?api-version=2024-08-01-preview',
     #     api_key='4CAjxJRE4DzhhGdSTcDGj2inIkTFt3T9XqBrjVZiGDz6NaprvrUyJQQJ99BAACHYHv6XJ3w3AAAAACOGiLz5',
-    #     deployment_name='gpt-4o-mini',
-    #     model='azure/gpt-4o-mini',
+    #     deployment_name='gpt-4o',
+    #     model='azure/gpt-4o',
     #     openai_api_type="azure",
     #     temperature=0.8,
     #     max_tokens=4096,
@@ -95,6 +92,8 @@ def getnl2sqlQuery(query_input):
 
     query_task.description = f"Convert the following natural language query to SQL: {user_query}"
     print(user_query)
+
+    
     result = crew.kickoff()
      # Extract the actual SQL query from the CrewOutput object
     if hasattr(result, 'raw_output'):  # If the attribute name is raw_output
