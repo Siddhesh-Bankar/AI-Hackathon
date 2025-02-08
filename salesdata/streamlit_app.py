@@ -18,7 +18,7 @@ from tools.nl2sqltask import getnl2sqlQuery
 from tools.insighttask import getInsights
 from google.auth.transport.requests import Request
 from pathlib import Path
-from tools.csvrag import getCSVInsights
+# from tools.csvrag import getCSVInsights
 import time
 
 
@@ -45,59 +45,12 @@ st.markdown(
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 
-def authenticate_gmail():
-    """Authenticate the user and return the Gmail API service."""
-    creds = None
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-    
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                Path(__file__).parent / "Desktop.json", SCOPES)
-            creds = flow.run_local_server(port=0)
-        
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
-    
-    try:
-        service = build('gmail', 'v1', credentials=creds)
-        return service
-    except Exception as error:
-        print(f'An error occurred: {error}')
-        return None
-
-def create_message(sender, to, subject, message_text):
-    """Create an email message."""
-    message = MIMEMultipart()
-    message['to'] = to
-    message['from'] = sender
-    message['subject'] = subject
-    
-    msg = MIMEText(message_text)
-    message.attach(msg)
-    
-    raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
-    return {'raw': raw_message}
-
-def send_message(service, sender, to, subject, message_text):
-    """Send an email message using Gmail API."""
-    try:
-        message = create_message(sender, to, subject, message_text)
-        sent_message = service.users().messages().send(userId="me", body=message).execute()
-        print(f'Message sent: {sent_message["id"]}')
-    except HttpError as error:
-        print(f'An error occurred: {error}')
-
 def stream_result(formatted_output):
     output_parts = formatted_output.split("\n")
     
     for part in output_parts:
         yield part + "\n"
-        time.sleep(0.5)  # Simulate a delay between each chunk to mimic streaming
-# Create login page using forms
+        time.sleep(0.5)  
 
 def login():
     st.title("Login to Sales Data Insights! 🔑")
@@ -182,11 +135,6 @@ def dashboard():
             st.markdown(response)
         st.session_state.messages.append({"role": "assistant", "content": response})
 
-    st.sidebar.subheader("Send Email Report 📄")
-    email_to = st.sidebar.text_input("Recipient Email")
-    email_subject = st.sidebar.text_input("Subject", "Sales Data Report")
-    email_body = st.sidebar.text_area("Additional Body Content", "Here is the sales data report.")
-
     if "sales_data" in st.session_state and st.session_state.sales_data is not None:
         sales_data = st.session_state.sales_data
         if not sales_data.empty:
@@ -252,17 +200,10 @@ def dashboard():
 
         if st.button("Generate Insights"):
             with st.spinner("Generating insights..."):
-                # insights = generate_insights(sales_data)
                 insightsfromcrew = getInsights(sales_data)
-                # st.subheader("Generated Insights")
-                # st.write(insights)
                 st.subheader("Generated Insights from crew ai")
                 st.write(insightsfromcrew)
-                # csvinsights=getCSVInsights()
-                # for chunk in stream_result(csvinsights):
-                #     st.write(chunk) 
                 
-                # print(csvinsights)
 
 if "logged_in" not in st.session_state or not st.session_state.logged_in:
     login()

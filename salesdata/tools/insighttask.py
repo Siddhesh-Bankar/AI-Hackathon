@@ -8,19 +8,17 @@ from crewai_tools import PDFSearchTool
 import warnings
 import re
 from langchain_openai import AzureChatOpenAI
+from tools.sendemail import SendEmailTool
 warnings.simplefilter("ignore", ResourceWarning)
+
 
 os.environ["OTEL_SDK_DISABLED"] = "true"
 
 from dotenv import load_dotenv
-
 load_dotenv()
-# os.environ["GOOGLE_API_KEY"] = "AIzaSyDSq_Lhr8Jt5Wvcd7Uh_VcmhlKyGDfq3uk"
-# genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
-os.environ["OPENAI_API_KEY"] = os.getenv("AZURE_API_KEY")
-os.environ["AZURE_API_KEY"] = os.getenv("AZURE_API_KEY")
-os.environ["AZURE_API_BASE"] = os.getenv("AZURE_API_BASE")
-os.environ["AZURE_API_VERSION"] = os.getenv("AZURE_API_VERSION")
+
+os.environ["GOOGLE_API_KEY"] = "AIzaSyDSq_Lhr8Jt5Wvcd7Uh_VcmhlKyGDfq3uk"
+genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 
 def clean_query(query):
     if isinstance(query, str):
@@ -30,18 +28,8 @@ def clean_query(query):
 
 def getInsights(query_input):
    
-    # llm = LLM(model="gpt-4o-mini",api_key='4CAjxJRE4DzhhGdSTcDGj2inIkTFt3T9XqBrjVZiGDz6NaprvrUyJQQJ99BAACHYHv6XJ3w3AAAAACOGiLz5')
-    llm = AzureChatOpenAI(
-        azure_endpoint='https://prasa-m6jgverq-eastus2.cognitiveservices.azure.com/openai/deployments/gpt-4o-mini/chat/completions?api-version=2024-08-01-preview',
-        api_key='4CAjxJRE4DzhhGdSTcDGj2inIkTFt3T9XqBrjVZiGDz6NaprvrUyJQQJ99BAACHYHv6XJ3w3AAAAACOGiLz5',
-        deployment_name='gpt-4o-mini',
-        model='azure/gpt-4o-mini',
-        openai_api_type="azure",
-        temperature=0,
-        api_version='2024-08-01-preview',
-        streaming=True,
-        verbose=True
-    )
+    
+    llm = LLM(model="gemini/gemini-1.5-flash",api_key='AIzaSyDSq_Lhr8Jt5Wvcd7Uh_VcmhlKyGDfq3uk')
 
     # Create an agent that will use the NL2SQLTool
     insights_agent = Agent(
@@ -70,26 +58,50 @@ def getInsights(query_input):
         "give insights with Bold text and emoji format"
     )
 
-   
+
     # Create a Crew and execute the task
     crew = Crew(
         agents=[insights_agent],
-        tasks=[insights_task],
-     
+        tasks=[insights_task]
     )
 
+    email_agent = Agent(
+        role="Sales Insights Generator",
+        goal="Generate insightful analysis from the sales data based on user queries and send email reports.",
+        backstory=(
+            "I am an AI assistant trained to analyze sales data and generate actionable insights. "
+        ),
+        llm=llm,
+        tools=[SendEmailTool()] 
+    )
+
+    email_task = Task(
+        description="Send an email with the generated insights with",
+        agent=email_agent,
+        expected_output="Confirmation that the email was sent successfully."
+    )
+
+    email_crew = Crew(
+            agents=[email_agent],
+            tasks=[email_task],
+            verbose=True
+    )
     # Example usage
     insights_task.description = f"Give me some insights about the data: {query_input}"
 
     result = crew.kickoff()
+    print(result)
+    
+    email_task.description = f"Send an email with the following insights: {result}"
+
+    email_result = email_crew.kickoff()
     
     print(result)
-    #Extract the actual SQL query from the CrewOutput object
-    if hasattr(result, 'raw_output'):  # If the attribute name is raw_output
+
+    if hasattr(result, 'raw_output'):  
         nl2sqlquery = result.raw_output
     else:
-        nl2sqlquery = str(result)  # Fallback to string conversion
+        nl2sqlquery = str(result)  
 
-    # Clean up unwanted characters (remove backticks)
     cleaned_result = clean_query(nl2sqlquery)
     return cleaned_result
