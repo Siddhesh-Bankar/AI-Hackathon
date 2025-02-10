@@ -50,10 +50,11 @@ def getnl2sqlQuery(query_input):
     nl2sql = NL2SQLTool(db_uri="mssql+pymssql://Intelligent4SPTeam:6xLVPIauw9YNFdv@arieotechdb.database.windows.net/Hackathon-Master-Database")
 
     # Create an agent that will use the NL2SQLTool
+    # Create an agent that will use the NL2SQLTool
     sql_agent = Agent(
         role="SQL Query Generator",
-        goal="Convert natural language queries into precise SQL queries for the sales_data table, ensuring accurate and efficient querying.",
-        backstory = (
+        goal="Convert natural language queries into precise SQL queries for the sales_data table, ensuring accurate and efficient querying. If the query is a formal question like 'Hi', 'Hello', or 'Who are you', respond appropriately without generating an SQL query.",
+        backstory=(
             "I am an AI assistant skilled in transforming natural language queries into structured SQL statements, specifically "
             "designed to work with the '[Intelligent4SPTeam].[sales_data]' and '[Intelligent4SPTeam].[product_data]' tables. I understand the structure of these tables, "
             "including columns like salesperson, region, product_id, sales, week, and month. My primary goal is to provide "
@@ -64,21 +65,22 @@ def getnl2sqlQuery(query_input):
             "product using 'product_id,' and return the corresponding product details such as the product name from the 'product_data' table. "
             "For example, I know that 1 corresponds to January, 2 corresponds to February, and so on up to December. "
             "The 'week' column contains integer values where 1 corresponds to the first week of the month, and so on. "
-            "I will always ensure the results are user-friendly and return meaningful data like the product_name instead of just IDs"
-            "Dont give duplicate column names while genrating query and instead og fiving product_id give its product_name allways"
-            "give query with schema [Intelligent4SPTeam] attached to it"
+            "I will always ensure the results are user-friendly and return meaningful data like the product_name instead of just IDs."
+            "If the user asks a formal question like 'Hi', 'Hello', or 'Who are you', I will respond appropriately without generating an SQL query."
         ),
-
         tools=[nl2sql],
         llm=llm
     )
 
-
     # Define a task for the agent
     query_task = Task(
-        description="Convert the following natural language query to SQL",
+        description="Convert the following natural language query to SQL. If the query is a formal question like 'Hi', 'Hello', or 'Who are you', respond appropriately without generating an SQL query.",
         agent=sql_agent,
-        expected_output="A valid SQL query give strict in string format only without the sql keyword",
+        expected_output=(
+            "If the query is a formal question, return an appropriate response like 'Hello! How can I assist you with SQL queries today?' "
+            "If the query is a valid natural language question, return a valid SQL query in string format without the SQL keyword. "
+            "Ensure the SQL query is well-formed and references the '[Intelligent4SPTeam].[sales_data]' and '[Intelligent4SPTeam].[product_data]' tables."
+        )
     )
 
     # Create a Crew and execute the task
@@ -90,16 +92,19 @@ def getnl2sqlQuery(query_input):
     # Example usage
     user_query = query_input
 
+    # Set the task description with the user query
     query_task.description = f"Convert the following natural language query to SQL: {user_query}"
-    print(user_query)
-    result = crew.kickoff()
-     # Extract the actual SQL query from the CrewOutput object
-    if hasattr(result, 'raw_output'):  # If the attribute name is raw_output
-        nl2sqlquery = result.raw_output
-    else:
-        nl2sqlquery = str(result)  # Fallback to string conversion
 
-    # Clean up unwanted characters (remove backticks)
-    cleaned_result = clean_query(nl2sqlquery)
+    # Execute the task
+    result = crew.kickoff()
+
+    # Extract the actual output from the CrewOutput object
+    if hasattr(result, 'raw_output'):  # If the attribute name is raw_output
+        output = result.raw_output
+    else:
+        output = str(result)  # Fallback to string conversion
+
+    # Clean up unwanted characters (e.g., remove backticks)
+    cleaned_result = clean_query(output)
     print(cleaned_result)
     return cleaned_result

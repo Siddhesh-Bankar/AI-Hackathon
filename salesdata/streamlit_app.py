@@ -18,8 +18,10 @@ from tools.nl2sqltask import getnl2sqlQuery
 from tools.insighttask import getInsights
 from google.auth.transport.requests import Request
 from pathlib import Path
+from tools.demand import getDemandJson
 # from tools.csvrag import getCSVInsights
 import time
+import json
 
 
 
@@ -37,7 +39,14 @@ st.markdown(
         max-width: 800px;
         margin: auto;
     }
-    
+    .compact-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    .compact-buttons button {
+        flex: 1;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -76,6 +85,50 @@ def login():
                 st.session_state.login_successful = False
                 st.error("Invalid username or password ❌") 
 
+def demand(Json):
+    st.title("📦 Product Ordering System")
+    
+    # Initialize session state for orders if not already present
+    if 'orders' not in st.session_state:
+        st.session_state.orders = {}
+
+    # Loop through products and create boxes
+    for idx, product in enumerate(Json):
+        with st.container():
+            st.markdown("---")  # Add a horizontal separator
+            col1, col2, col3, col4 = st.columns([3, 2, 3, 2])
+
+            with col1:
+                st.subheader(f"🛒 {product['product_name']}")
+
+            with col2:
+                st.write(f"**Quantity:** {product['quantity']}")
+
+            with col3:
+                st.write(f"**Manufacturer:** {product['manufacturer']}")
+
+            with col4:
+                order_key = f"order_{idx}"
+                if order_key not in st.session_state.orders:
+                    st.session_state.orders[order_key] = False
+
+                if st.button(f"Order {idx+1}", key=order_key):
+                    st.session_state.orders[order_key] = True
+
+                if st.session_state.orders[order_key]:
+                    st.success(f"✅ Order placed for {product['product_name']}!")
+
+    st.markdown("---")
+
+def is_valid_query(query):
+    # Normalize the query to lowercase and remove leading/trailing spaces
+    query = query.strip().lower()
+    # Check if the query contains 'select' (not necessarily at the beginning)
+    return "select" in query
+
+def person():
+    st.title("👤 Person Information")
+    st.write("This is the person section. You can add functionality related to person data here.")
 # Main Dashboard Page (Only visible after login)
 def dashboard():
     st.title("Sales Data Insights Chat")
@@ -116,6 +169,7 @@ def dashboard():
 
     if prompt := st.chat_input("Enter your query or command"):
         st.session_state.messages.append({"role": "user", "content": prompt})
+        st.session_state.sales_data=None
         with st.chat_message("user"):
             st.markdown(prompt)
 
@@ -123,8 +177,13 @@ def dashboard():
             try:
                 nl2sqlquery = getnl2sqlQuery(prompt)
                 st.session_state.query = nl2sqlquery
-                sales_data = fetch_sales_data(nl2sqlquery)
-                st.session_state.sales_data = sales_data
+                if is_valid_query(nl2sqlquery):
+                    sales_data = fetch_sales_data(nl2sqlquery)
+                    st.session_state.sales_data = sales_data
+                else:
+                    print("Invalid query. Query execution aborted.")
+                    st.markdown(nl2sqlquery)
+                
                 response = "Data fetched successfully!"
             except Exception as e:
                 response = f"Error fetching data: {e}"
@@ -185,18 +244,6 @@ def dashboard():
                     time_chart_path = "sales_over_time.png"
                     fig2.savefig(time_chart_path, format="png")
 
-            if st.sidebar.button("Send Email 📧"):
-                try:
-                    service = authenticate_gmail()
-                    sender_email = "your_email@gmail.com"
-                    subject = email_subject
-                    body = email_body
-
-                    send_message(service, sender_email, email_to, subject, body)
-
-                    st.sidebar.success("Email sent successfully! 📧")
-                except Exception as e:
-                    st.sidebar.error(f"Error: {str(e)} ❌")
 
         if st.button("Generate Insights"):
             with st.spinner("Generating insights..."):
@@ -207,8 +254,31 @@ def dashboard():
 
 if "logged_in" not in st.session_state or not st.session_state.logged_in:
     login()
+
 elif st.session_state.get("dashboard_redirect", False):
-    dashboard()
+        prompt="Give me the top 5 product list with has highest sales,its manufacturer and its quantity present in the product_data"
+        page = st.sidebar.radio("Go to", ["Sales Chat", "Demand"])
+        if page == "Sales Chat":
+            dashboard()
+        elif page == "Demand":
+            # Add two buttons for "Order" and "Person" in a compact layout
+            st.markdown('<div class="compact-buttons">', unsafe_allow_html=True)
+            if st.button("Order"):
+                # Fetch and process demand data if not already in session state
+                if 'demand_data' not in st.session_state:
+                    with st.spinner("Fetching demand data..."):
+                        nl2sqlquery = getnl2sqlQuery(prompt)
+                        nl2sqlquery = nl2sqlquery.replace("sql", "").strip()
+                        st.session_state.demand_data = fetch_sales_data(nl2sqlquery)
+                        st.session_state.demandJson = getDemandJson(st.session_state.demand_data)
+                # Display the demand data
+                demand(st.session_state.demandJson)
+            if st.button("Person"):
+                # Call the person function
+                person()
+            st.markdown('</div>', unsafe_allow_html=True)
+
+    
 else:
     st.warning("Please log in to access the dashboard ⚠️.")
 
