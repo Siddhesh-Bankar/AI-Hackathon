@@ -24,7 +24,7 @@ tasks:
       - insights
 
   - name: SendEmail
-    description: "Send insights via Outlook email."
+    description: "Send insights via gmail email."
     agent: "EmailAgent"
     inputs:
       - insights

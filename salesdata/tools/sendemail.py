@@ -24,7 +24,7 @@ def authenticate_gmail():
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(r'AI-Hackathon\salesdata\tools\googlecreds.json', SCOPES)
+            flow = InstalledAppFlow.from_client_secrets_file(r'D:\arieotech\AI Hackathon\Latest Project Data\AI-Hackathon\salesdata\tools\client_secret.json', SCOPES)
             creds = flow.run_local_server(port=0)
         
         with open('token.json', 'w') as token:
@@ -72,10 +72,10 @@ class SendEmailTool(BaseTool):
             print("Message from sendmail",message_text)
             print("EmailTask")
             service = authenticate_gmail()
-            sender_email = "sarthakdongre0303@gmail.com"
+            sender_email = "shelarpooja21@gmail.com"
             body = message_text
 
-            send_message(service, sender_email, "pooja.shelar21@gmail.com", "mail from crew", body)
+            send_message(service, sender_email, "sarthakdongre0303@gmail.com", "mail from crew", body)
             return f"Email sent successfully to {sender_email}"
         except Exception as e:
             return f"Error sending email: {str(e)}"
