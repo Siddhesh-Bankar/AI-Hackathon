@@ -11,7 +11,16 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from google.auth.transport.requests import Request
+from mailersend import emails
+from dotenv import load_dotenv
+import mailersend
+from mailersend import emails
+import mailtrap as mt
 
+load_dotenv()
+
+
+mailer = emails.NewEmail(os.getenv('MAILERSEND_API_KEY'))
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 
 def authenticate_gmail():
@@ -59,6 +68,8 @@ def send_message(service, sender, to, subject, message_text):
     except HttpError as error:
         print(f'An error occurred: {error}')
 
+
+
 class SendEmailInput(BaseModel):
     message_text: str = Field(..., description="Body content of the email")
 
@@ -71,11 +82,19 @@ class SendEmailTool(BaseTool):
         try:
             print("Message from sendmail",message_text)
             print("EmailTask")
-            service = authenticate_gmail()
-            sender_email = "sarthakdongre0303@gmail.com"
-            body = message_text
+           
 
-            send_message(service, sender_email, "pooja.shelar21@gmail.com", "mail from crew", body)
-            return f"Email sent successfully to {sender_email}"
+            mail = mt.Mail(
+                sender=mt.Address(email="hello@demomailtrap.com", name="Mailtrap Test"),
+                to=[mt.Address(email="sarthakdongre0303@gmail.com")],
+                subject="You are awesome!",
+                text=message_text,
+                category="Integration Test",
+            )
+
+            client = mt.MailtrapClient(token="f4261d3a769f52d5104f636472c60474")
+            response = client.send(mail)
+
+            print(response)
         except Exception as e:
             return f"Error sending email: {str(e)}"

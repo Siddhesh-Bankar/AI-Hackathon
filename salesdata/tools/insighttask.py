@@ -66,21 +66,35 @@ def getInsights(query_input):
     )
 
     email_agent = Agent(
-        role="Sales Insights Generator",
-        goal="Generate insightful analysis from the sales data based on user queries and send email reports.",
+        role="Sales Insights Specialist",
+        goal=(
+            "To analyze complex sales data, identify key performance trends, and generate "
+            "insightful reports that empower stakeholders to make informed business decisions. "
+            "Deliver these insights through well-structured, professional email communications."
+        ),
         backstory=(
-            "I am an AI assistant trained to analyze sales data and generate actionable insights. "
+            "I am a highly proficient AI-driven Sales Insights Specialist with deep expertise in "
+            "data analytics and business intelligence. My primary responsibility is to transform "
+            "raw sales data into meaningful and actionable insights. By leveraging advanced data "
+            "analysis techniques, I extract key trends, uncover growth opportunities, and provide "
+            "strategic recommendations. I ensure that all insights are communicated effectively "
+            "through concise, data-driven email reports, enabling decision-makers to optimize "
+            "sales strategies and drive business success."
         ),
         llm=llm,
-        tools=[SendEmailTool()] 
+        tools=[SendEmailTool()]
     )
 
+# Define the email task
     email_task = Task(
-        description="Send an email with the generated insights with",
+        description=(
+            "Draft and send a professional email containing data-driven sales insights. "
+            "Ensure the email is structured, informative, and provides actionable takeaways "
+            "that assist stakeholders in making strategic business decisions."
+        ),
         agent=email_agent,
         expected_output="Confirmation that the email was sent successfully."
     )
-
     email_crew = Crew(
             agents=[email_agent],
             tasks=[email_task],
@@ -92,7 +106,7 @@ def getInsights(query_input):
     result = crew.kickoff()
     print(result)
     
-    email_task.description = f"Send an email with the following insights: {result}"
+    email_task.description = f"Draft and send a professional email containing data-driven sales insights {result} .Ensure the email is structured, informative, and provides actionable takeaways that assist stakeholders in making strategic business decisions."
 
     email_result = email_crew.kickoff()
     
