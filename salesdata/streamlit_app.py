@@ -5,6 +5,7 @@ import pandas as pd
 import seaborn as sns
 import streamlit as st
 from pathlib import Path
+from PIL import Image
 import matplotlib.pyplot as plt
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
@@ -18,7 +19,6 @@ from tools.insighttask import getInsights
 from google.auth.transport.requests import Request
 from tools.csvrag import getCSVInsights
 from tools.custom_tool import fetch_sales_data, generate_insights, insert_data_into_database, authenticate_user
-
 
 st.set_page_config(page_title="Sales Data Insights", page_icon="📈", layout="wide")
 
@@ -124,7 +124,6 @@ def stream_result(formatted_output):
         yield part + "\n"
         time.sleep(0.5)  # Simulate a delay between each chunk to mimic streaming
 
-
 # Create login page using forms
 def login():
     # Custom CSS for the login page
@@ -183,11 +182,9 @@ def login():
     }
 
     </style>
-    """, unsafe_allow_html=True)
-    
+    """, unsafe_allow_html=True)        
     # Title using HTML and custom class
     st.markdown('<h1 class="stMarkdown">Login to Sales Data Insights! 🔑</h1>', unsafe_allow_html=True)
-    
     
     # Form for login
     with st.form(key="login_form"):
@@ -204,7 +201,6 @@ def login():
                 st.session_state.logged_in = True
                 st.session_state.username = user_details['username']
                 st.session_state.login_successful = True
-                # st.success(f"Welcome, {username}! 🎉")
                 st.session_state.dashboard_redirect = True
                 st.rerun()
             else:
@@ -302,28 +298,64 @@ def dashboard():
 
                 if 'region' in sales_data.columns and 'sales' in sales_data.columns:
                     fig1, ax1 = plt.subplots(figsize=(8, 6))
-                    sns.barplot(x='region', y='sales', data=sales_data, ax=ax1, palette="viridis")
-                    ax1.set_title('Sales by Region 📊', fontsize=16)
-                    ax1.set_xlabel('Region 🌍', fontsize=12)
-                    ax1.set_ylabel('Sales 💸', fontsize=12)
+                    sns.barplot(x='region', y='sales', data=sales_data, ax=ax1, palette="viridis", ci=None)
+                    ax1.set_title('Sales by Region ', fontsize=16, fontweight='bold', color='darkblue')
+                    ax1.set_xlabel('Region ', fontsize=12, fontweight='bold')
+                    ax1.set_ylabel('Sales ', fontsize=12, fontweight='bold')
+                    ax1.spines['top'].set_visible(False)
+                    ax1.spines['right'].set_visible(False)
                     plt.xticks(rotation=45, ha='right')
                     st.pyplot(fig1)
 
                     region_chart_path = "sales_by_region.png"
-                    fig1.savefig(region_chart_path, format="png")
+                    fig1.savefig(region_chart_path, format="png", bbox_inches="tight")
 
-                if 'date' in sales_data.columns and 'sales' in sales_data.columns:
-                    sales_data['date'] = pd.to_datetime(sales_data['date'])
-                    sales_data = sales_data.sort_values(by='date')
+                    
+                if 'month' in sales_data.columns and 'sales' in sales_data.columns:
+                    sales_data['month'] = pd.to_datetime(sales_data['month'])
+                    sales_data = sales_data.sort_values(by='month')
                     fig2, ax2 = plt.subplots(figsize=(8, 6))
-                    sns.lineplot(x='date', y='sales', data=sales_data, ax=ax2, palette="magma")
-                    ax2.set_title('Sales Over Time 📆', fontsize=16)
-                    ax2.set_xlabel('Date 📅', fontsize=12)
-                    ax2.set_ylabel('Sales 💵', fontsize=12)
+                    sns.lineplot(x='month', y='sales', data=sales_data, ax=ax2, palette="magma" , ci=None)
+                    ax2.set_title('Sales Over Time 📆', fontsize=16, fontweight='bold', color='darkblue')
+                    ax2.set_xlabel('Date 📅', fontsize=12, fontweight='bold')
+                    ax2.set_ylabel('Sales 💵', fontsize=12, fontweight='bold')
+                    ax2.spines['top'].set_visible(False)
+                    ax2.spines['right'].set_visible(False)
+                    plt.xticks(rotation=45, ha='right')
                     st.pyplot(fig2)
 
                     time_chart_path = "sales_over_time.png"
                     fig2.savefig(time_chart_path, format="png")
+
+            # if st.sidebar.button("Send Email 📧"):
+            #     try:
+            #         # Convert sales data to HTML table
+            #         table_html = sales_data.to_html(index=False)
+
+            #         # Generate insights
+            #         insights = getInsights(sales_data)
+            #         # Construct email body
+            #         email_body = f"""
+            #         <html>
+            #         <body>
+            #             <p>Dear Recipient,</p>
+            #             <p>{email_body_content}</p>
+            #             {table_html}
+            #             <p>Best regards,</p>
+            #             <p>Your Company</p>
+            #         </body>
+            #         </html>
+            #             """
+            #         service = authenticate_gmail()
+            #         sender_email = "your_email@gmail.com"
+            #         subject = email_subject
+            #         body = email_body
+                    
+            #         send_message_with_attachments(service, sender_email, email_to, subject, body, table_html, region_chart_path, time_chart_path)
+
+            #         st.sidebar.success("Email sent successfully! 📧")
+            #     except Exception as e:
+            #         st.sidebar.error(f"Error: {str(e)} ❌")
 
             if st.sidebar.button("Send Email 📧"):
                 try:
@@ -340,17 +372,9 @@ def dashboard():
 
         if st.button("Generate Insights"):
             with st.spinner("Generating insights..."):
-                # insights = generate_insights(sales_data)
                 insightsfromcrew = getInsights(sales_data)
-                # st.subheader("Generated Insights")
-                # st.write(insights)
                 st.subheader("Generated Insights from crew ai")
                 st.write(insightsfromcrew)
-                # csvinsights=getCSVInsights()
-                # for chunk in stream_result(csvinsights):
-                #     st.write(chunk) 
-                
-                # print(csvinsights)
 
 if "logged_in" not in st.session_state or not st.session_state.logged_in:
     login()
@@ -358,4 +382,3 @@ elif st.session_state.get("dashboard_redirect", False):
     dashboard()
 else:
     st.warning("Please log in to access the dashboard ⚠️.")
-
