@@ -17,13 +17,11 @@ from tools.insighttask import getInsights
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 
 def stream_result(formatted_output):
-    """Yields output in a streaming format."""
     for part in formatted_output.split("\n"):
         yield part + "\n"
         time.sleep(0.5)
 
 def login():
-    """Handles user authentication."""
     st.title("Login to Sales Data Insights! 🔑")
     with st.form(key="login_form"):
         username = st.text_input("Username 👤")
@@ -32,19 +30,31 @@ def login():
     
     if login_button:
         if authenticate_user(username, password):
-            st.session_state.update({"logged_in": True, "username": username, "login_successful": True})
+            st.session_state.update({
+                "logged_in": True, 
+                "username": username, 
+                "login_successful": True,
+                "show_file_upload": False,
+                "show_chat": True  # Ensure Sales Chat is shown after login
+            })
             st.success(f"Welcome, {username}! 🎉")
             st.rerun()
         else:
             st.session_state["login_successful"] = False
             st.error("Invalid username or password ❌")
 
+def logout():
+    """Clears session state and redirects to the login page."""
+    st.session_state.clear()
+    st.session_state["logged_in"] = False
+    st.success("Logged out successfully! Redirecting to login... 🔄")
+    time.sleep(1)
+    st.rerun()
+
 def set_page_config():
-    """Sets page configuration."""
-    st.set_page_config(page_title="Virtual Sales Agent Chat", layout="wide", initial_sidebar_state="expanded")
+    st.set_page_config(page_title="Sales Agent", layout="wide", initial_sidebar_state="expanded")
 
 def set_page_style():
-    """Applies custom styles."""
     st.markdown(f"""
         <style>
         {open("assets/style.css").read()}
@@ -52,38 +62,51 @@ def set_page_style():
     """, unsafe_allow_html=True)
 
 def setup_sidebar():
-    """Configures the sidebar UI."""
     if not st.session_state.get("logged_in"):
         return
     
     with st.sidebar:
-        st.markdown("""
-            <div class="agent-profile">
-                <div class="profile-header">
-                    <div class="avatar">🤖</div>
-                    <h1>Sales Agent</h1>
-                </div>
-                <div class="feature-list">
-                    <div class="feature-item"><span class="icon">🛒</span> <span>Browse File</span></div>
-                    <div class="feature-item"><span class="icon">🎯</span> <span>Get personalized recommendations</span></div>
-                </div>
-                <div class="status-card"><div class="status-indicator"></div> <span>Ready to Assist</span></div>
+        st.markdown("""<div class="agent-profile">
+            <div class="profile-header">
+                <div class="avatar">🤖</div>
+                <h1>Sales Agent</h1>
             </div>
-        """, unsafe_allow_html=True)
+            <div class="feature-list">
+                <div class="feature-item"><span class="icon">🛒</span> <span>Browse File</span></div>
+                <div class="feature-item"><span class="icon">🎯</span> <span>Get personalized recommendations</span></div>
+            </div>
+            <div class="status-card"><div class="status-indicator"></div> <span>Ready to Assist</span></div>
+        </div>""", unsafe_allow_html=True)
+
+        # ✅ Apply CSS Class to Buttons
         
-        if st.button("File Upload 📂"):
+        if st.button("📂 File Upload", use_container_width=True, key="file_upload_btn"):
             st.session_state["show_file_upload"] = True
+            st.session_state["show_chat"] = False  # Hide Chat
+
+        if st.button("💬 Sales Chat", use_container_width=True, key="sales_chat_btn"):
+            st.session_state["show_chat"] = True
+            st.session_state["show_file_upload"] = False  # Hide File Upload
         
         st.markdown("---")
-        if st.button("🔄 Start New Chat"):
-            st.session_state.clear()
+
+        if st.button("🔄 Start New Chat", use_container_width=True):
+            keys_to_keep = {"logged_in", "username", "login_successful", "show_file_upload", "show_chat"}
+            st.session_state = {key: st.session_state[key] for key in keys_to_keep if key in st.session_state}
+            st.session_state["messages"] = []  # Clear chat history
             st.rerun()
         
-        if st.button("🔍 Visualize Workflow"):
+        if st.button("🔍 Visualize Workflow", use_container_width=True):
             st.image("assets/graph.png")
 
+        st.markdown("---")
+
+        # 🔴 Logout Button
+        if st.button("🚪 Logout", use_container_width=True):
+            logout()
+
 def handle_file_upload():
-    """Handles CSV file uploads."""
+    st.subheader("📂 File Upload")
     uploaded_file = st.file_uploader("Choose a CSV file 📂", type="csv")
     if uploaded_file:
         csv_data = pd.read_csv(uploaded_file)
@@ -94,7 +117,12 @@ def handle_file_upload():
             st.success(result_message + " ✅") if "Successfully inserted" in result_message else st.error(result_message + " ❌")
 
 def chat_interface():
-    """Manages chat-based interactions."""
+    if not st.session_state.get("show_chat"):
+        return
+    
+    st.subheader("💬 Sales Chat")
+    st.write("Ask me anything about sales data!")
+
     if "messages" not in st.session_state:
         st.session_state["messages"] = []
     
@@ -102,26 +130,28 @@ def chat_interface():
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
     
-    prompt = st.chat_input("Enter your query or command")
-    if prompt:
+    if prompt := st.chat_input("Enter your query or command"):
         st.session_state["messages"].append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
-        
-        try:
-            nl2sqlquery = getnl2sqlQuery(prompt)
-            sales_data = fetch_sales_data(nl2sqlquery)
-            st.session_state.update({"query": nl2sqlquery, "sales_data": sales_data})
-            response = "Data fetched successfully!"
-        except Exception as e:
-            response = f"Error fetching data: {e}"
-        
+
+        if prompt.strip():
+            try:
+                nl2sqlquery = getnl2sqlQuery(prompt)
+                st.session_state.query = nl2sqlquery
+                sales_data = fetch_sales_data(nl2sqlquery)
+                st.session_state.sales_data = sales_data
+                response = "Data fetched successfully! 📊"
+            except Exception as e:
+                response = f"Error fetching data: {e} ❌"
+        else:
+            response = "Please enter a valid query."
+
         with st.chat_message("assistant"):
             st.markdown(response)
         st.session_state["messages"].append({"role": "assistant", "content": response})
 
 def display_sales_data():
-    """Displays sales data with insights."""
     sales_data = st.session_state.get("sales_data")
     if sales_data is not None and not sales_data.empty:
         st.subheader("Sales Data 📊")
@@ -150,7 +180,6 @@ def display_sales_data():
                 st.write(getInsights(sales_data))
 
 def main():
-    """Main function to execute the app."""
     set_page_config()
     set_page_style()
     
@@ -159,9 +188,13 @@ def main():
         return
     
     setup_sidebar()
+    
+    # Show only the selected section
     if st.session_state.get("show_file_upload"):
         handle_file_upload()
-    chat_interface()
+    elif st.session_state.get("show_chat"):
+        chat_interface()
+
     display_sales_data()
 
 if __name__ == "__main__":
