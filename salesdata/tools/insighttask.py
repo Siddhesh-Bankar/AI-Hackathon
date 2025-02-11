@@ -16,8 +16,9 @@ os.environ["OTEL_SDK_DISABLED"] = "true"
 
 from dotenv import load_dotenv
 load_dotenv()
+GOOGLE_API_KEY=os.getenv("GOOGLE_API_KEY")
 
-os.environ["GOOGLE_API_KEY"] = "AIzaSyDSq_Lhr8Jt5Wvcd7Uh_VcmhlKyGDfq3uk"
+os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
 genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 
 def clean_query(query):
@@ -29,7 +30,7 @@ def clean_query(query):
 def getInsights(query_input):
    
     
-    llm = LLM(model="gemini/gemini-1.5-flash",api_key='AIzaSyDSq_Lhr8Jt5Wvcd7Uh_VcmhlKyGDfq3uk')
+    llm = LLM(model="gemini/gemini-1.5-flash",api_key=GOOGLE_API_KEY)
 
     # Create an agent that will use the NL2SQLTool
     insights_agent = Agent(

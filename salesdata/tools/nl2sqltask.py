@@ -20,9 +20,11 @@ load_dotenv()
 # os.environ["AZURE_API_KEY"] = os.getenv("AZURE_API_KEY")
 # os.environ["AZURE_API_BASE"] = os.getenv("AZURE_API_BASE")
 # os.environ["AZURE_API_VERSION"] = os.getenv("AZURE_API_VERSION")
-
-os.environ["GOOGLE_API_KEY"] = "AIzaSyDSq_Lhr8Jt5Wvcd7Uh_VcmhlKyGDfq3uk"
+GOOGLE_API_KEY=os.getenv("GOOGLE_API_KEY")
+DB_URI=os.getenv("DB_URI")
+os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
 genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
+
 
 def clean_query(query):
     if isinstance(query, str):
@@ -32,25 +34,10 @@ def clean_query(query):
 
 def getnl2sqlQuery(query_input):
    
-    llm = LLM(model="gemini/gemini-1.5-flash",api_key='AIzaSyDSq_Lhr8Jt5Wvcd7Uh_VcmhlKyGDfq3uk')
-    # llm = AzureChatOpenAI(
-    #     azure_endpoint='https://prasa-m6jgverq-eastus2.cognitiveservices.azure.com/openai/deployments/gpt-4o-mini/chat/completions?api-version=2024-08-01-preview',
-    #     api_key='4CAjxJRE4DzhhGdSTcDGj2inIkTFt3T9XqBrjVZiGDz6NaprvrUyJQQJ99BAACHYHv6XJ3w3AAAAACOGiLz5',
-    #     deployment_name='gpt-4o-mini',
-    #     model='azure/gpt-4o-mini',
-    #     openai_api_type="azure",
-    #     temperature=0.8,
-    #     max_tokens=4096,
-    #     api_version='2024-08-01-preview',
-    #     streaming=True,
-    #     verbose=True
-    # )
-   
-    # Initialize the NL2SQLTool with your database URI
-    nl2sql = NL2SQLTool(db_uri="mssql+pymssql://Intelligent4SPTeam:6xLVPIauw9YNFdv@arieotechdb.database.windows.net/Hackathon-Master-Database")
+    llm = LLM(model="gemini/gemini-1.5-flash",api_key=GOOGLE_API_KEY)
+    
+    nl2sql = NL2SQLTool(db_uri=DB_URI)
 
-    # Create an agent that will use the NL2SQLTool
-    # Create an agent that will use the NL2SQLTool
     sql_agent = Agent(
         role="SQL Query Generator",
         goal="Convert natural language queries into precise SQL queries for the sales_data table, ensuring accurate and efficient querying. If the query is a formal question like 'Hi', 'Hello', or 'Who are you', respond appropriately without generating an SQL query.",

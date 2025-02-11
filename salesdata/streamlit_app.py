@@ -14,7 +14,8 @@ from tools.custom_tool import fetch_sales_data, generate_insights, insert_data_i
 from tools.nl2sqltask import getnl2sqlQuery
 from tools.insighttask import getInsights
 from tools.demand import getDemandJson
- 
+from tools.sendemail import SendEmailTool
+
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
  
 def stream_result(formatted_output):
@@ -36,7 +37,7 @@ def login():
                 "username": username,
                 "login_successful": True,
                 "show_file_upload": False,
-                "show_chat": True  # Ensure Sales Chat is shown after login
+                "show_chat": True
             })
             st.success(f"Welcome, {username}! 🎉")
             st.rerun()
@@ -128,15 +129,15 @@ def is_valid_query(query):
 
 def demand(Json):
     st.title("📦 Product Ordering System")
-    
-    # Initialize session state for orders if not already present
+
+    # Initialize session state for tracking orders if not already present
     if 'orders' not in st.session_state:
         st.session_state.orders = {}
 
-    # Loop through products and create boxes
+    # Loop through products and create order buttons
     for idx, product in enumerate(Json):
         with st.container():
-            st.markdown("---")  # Add a horizontal separator
+            st.markdown("---")  # Separator
             col1, col2, col3, col4 = st.columns([3, 2, 3, 2])
 
             with col1:
@@ -150,16 +151,14 @@ def demand(Json):
 
             with col4:
                 order_key = f"order_{idx}"
-                if order_key not in st.session_state.orders:
-                    st.session_state.orders[order_key] = False
 
-                if st.button(f"Order {idx+1}", key=order_key):
-                    st.session_state.orders[order_key] = True
-
-                if st.session_state.orders[order_key]:
+                # If the order button is clicked, mark it as ordered
+                if st.button(f"Order {idx+1}", key=f"btn_{idx}"):
                     st.success(f"✅ Order placed for {product['product_name']}!")
+                    send_email_tool = SendEmailTool()
+                    message_text=f"✅ Order placed for {product['product_name']}!"
+                    result = send_email_tool._run(message_text)
 
-    st.markdown("---")
 
 def person():
     st.title("👤 Person Information")
@@ -181,7 +180,9 @@ def chat_interface():
    
     if prompt := st.chat_input("Enter your query or command"):
         st.session_state["messages"].append({"role": "user", "content": prompt})
+
         st.session_state.sales_data=None
+
         with st.chat_message("user"):
             st.markdown(prompt)
  
@@ -207,7 +208,7 @@ def chat_interface():
  
 def display_sales_data():
     sales_data = st.session_state.get("sales_data")
-    if sales_data is not None and not sales_data.empty:
+    if sales_data is not None and not sales_data.empty and st.session_state["show_chat"]:
         st.subheader("Sales Data 📊")
         st.data_editor(sales_data, num_rows="dynamic")
        
@@ -232,21 +233,25 @@ def display_sales_data():
             with st.spinner("Generating insights..."):
                 st.subheader("Generated Insights from AI")
                 st.write(getInsights(sales_data))
-def demand():
-        prompt="Give me the top 5 product list with has highest sales,its manufacturer and its quantity present in the product_data"
+
+def handle_demand_chat():
+        prompt="Give me the top 5 product list with has highest sales,its manufacturer and its quantity present in the product_data. dont miss quantity column"
         st.markdown('<div class="compact-buttons">', unsafe_allow_html=True)
         if st.button("Order"):
             # Fetch and process demand data if not already in session state
+            
             if 'demand_data' not in st.session_state:
                 with st.spinner("Fetching demand data..."):
                     nl2sqlquery = getnl2sqlQuery(prompt)
                     nl2sqlquery = nl2sqlquery.replace("sql", "").strip()
                     st.session_state.demand_data = fetch_sales_data(nl2sqlquery)
                     st.session_state.demandJson = getDemandJson(st.session_state.demand_data)
+
             # Display the demand data
-                demand(st.session_state.demandJson)
+            
+        if 'demandJson' in st.session_state:
+            demand(st.session_state.demandJson);    
         if st.button("Person"):
-            # Call the person function
             person()
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -267,7 +272,7 @@ def main():
     elif st.session_state.get("show_chat"):
         chat_interface()
     elif st.session_state.get("demand_chat"):
-        demand()
+        handle_demand_chat()
             
     display_sales_data()
  
