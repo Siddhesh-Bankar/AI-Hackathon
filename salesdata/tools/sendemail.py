@@ -87,7 +87,7 @@ class SendEmailTool(BaseTool):
             mail = mt.Mail(
                 sender=mt.Address(email="hello@demomailtrap.com", name="Mailtrap Test"),
                 to=[mt.Address(email="sarthakdongre0303@gmail.com")],
-                subject="You are awesome!",
+                subject="Insights",
                 text=message_text,
                 category="Integration Test",
             )
