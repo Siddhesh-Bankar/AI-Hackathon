@@ -6,8 +6,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 import time
-from google.auth.transport.requests import Request
- 
+from google.auth.transport.requests import Request 
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.messages.tool import ToolMessage
 from tools.custom_tool import fetch_sales_data, generate_insights, insert_data_into_database, authenticate_user

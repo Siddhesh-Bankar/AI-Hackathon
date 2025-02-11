@@ -7,7 +7,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
 import os
-import psycopg2
 
 def connect_to_sql_server():
     """Establishes a connection to the SQL Server database."""
