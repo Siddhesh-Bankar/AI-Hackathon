@@ -54,12 +54,19 @@ def logout():
 def set_page_config():
     st.set_page_config(page_title="Sales Agent", layout="wide", initial_sidebar_state="expanded")
  
+# def set_page_style():
+#     st.markdown(f"""
+#         <style>
+#         {open(r"./style.css").read()}
+#         </style>
+#     """, unsafe_allow_html=True)
+
+css_path = os.path.join(os.path.dirname(__file__), "style.css")
+
 def set_page_style():
-    st.markdown(f"""
-        <style>
-        {open(r"./style.css").read()}
-        </style>
-    """, unsafe_allow_html=True)
+    with open(css_path, "r") as f:
+        css_content = f.read()
+    st.markdown(f"<style>{css_content}</style>", unsafe_allow_html=True)
  
 def setup_sidebar():
     if not st.session_state.get("logged_in"):
