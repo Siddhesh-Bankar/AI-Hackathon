@@ -6,6 +6,20 @@ authors = [{ name = "Pooja", email = "shelarpooja21@gmail.com" }]
 requires-python = ">=3.10,<3.13"
 dependencies = [
     "crewai[tools]>=0.98.0,<1.0.0"
+    "crewai"==0.98.0
+    "streamlit"==1.42.0
+    "matplotlib"==3.10.0
+    "seaborn"==0.13.2
+    "pyodbc"==5.2.0
+    "google_auth_oauthlib"==1.2.1
+    "google-api-python-client"==2.160.0
+    "google-generativeai"==0.8.4
+    "pymssql"==2.3.2
+    "mailersend"==0.5.8
+    "langchain-google-genai"==2.0.9
+    "mailtrap"==2.0.1
+    "crewai-tools"==0.32.1
+    "sqlite3"==3.35.0
 ]
 
 [project.scripts]
