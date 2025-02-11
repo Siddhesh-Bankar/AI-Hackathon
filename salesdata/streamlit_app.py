@@ -57,7 +57,7 @@ def set_page_config():
 def set_page_style():
     st.markdown(f"""
         <style>
-        {open("./style.css").read()}
+        {open(r"./style.css").read()}
         </style>
     """, unsafe_allow_html=True)
  
