@@ -62,13 +62,18 @@ def login():
 def logout():
     """Clears session state and redirects to the login page."""
     st.session_state.clear()
-    st.session_state["logged_in"] = False
-    # st.success("Logged out successfully! Redirecting to login... 🔄")
-    time.sleep(1)
-    st.rerun()
+    st.session_state.logged_in = False
+    st.session_state.dashboard_redirect = False
+    st.session_state.username = None
+    st.session_state.login_successful = False
+    st.session_state.sales_data = None  
+    st.session_state.query = None  
+    st.session_state.demand_data  = None
+ 
+    st.rerun()  
  
 def set_page_config():
-    st.set_page_config(page_title="Sales Agent", layout="wide", initial_sidebar_state="expanded")
+    st.set_page_config(page_title="Sales Data Insights", layout="wide", page_icon="📈", initial_sidebar_state="expanded")
 
 css_path = os.path.join(os.path.dirname(__file__), "style.css")
 
