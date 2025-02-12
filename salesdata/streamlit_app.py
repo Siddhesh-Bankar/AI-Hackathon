@@ -64,10 +64,10 @@ def login():
 def logout():
     """Clears session state and redirects to the login page."""
     st.session_state.clear()
-    st.session_state.['logged_in'] = False
-    st.session_state.dashboard_redirect = False
-    st.session_state.username = None
-    st.session_state.login_successful = False
+    st.session_state['logged_in'] = False
+    st.session_state['dashboard_redirect'] = False
+    st.session_state['username'] = None
+    st.session_state['login_successful'] = False
     st.session_state['sales_data'] = None  
     st.session_state['query'] = None  
     st.session_state['demand_data']  = None
