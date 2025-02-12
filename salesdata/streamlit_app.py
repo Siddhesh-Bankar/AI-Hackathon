@@ -71,6 +71,7 @@ def logout():
     st.session_state['sales_data'] = None  
     st.session_state.query = None  
     st.session_state['demand_data']  = None
+    st.session_state['demandJson']  = None
  
     st.rerun()  
  
