@@ -15,6 +15,7 @@ from tools.nl2sqltask import getnl2sqlQuery
 from tools.insighttask import getInsights
 from tools.demand import getDemandJson
 from tools.sendemail import SendEmailTool
+import socket
 
  
 def stream_result(formatted_output):
@@ -58,6 +59,7 @@ def login():
         else:
             st.session_state["login_successful"] = False
             st.error("Invalid username or password ❌")
+
  
 def logout():
     """Clears session state and redirects to the login page."""
@@ -271,7 +273,13 @@ def handle_demand_chat():
         st.markdown('</div>', unsafe_allow_html=True)
 
 
-def main():
+def main():    
+    ## getting the hostname by socket.gethostname() method
+    hostname = socket.gethostname()
+    ## getting the IP address using socket.gethostbyname() method
+    ip_address = socket.gethostbyname(hostname)
+    print(ip_address)
+    st.write(ip_address)
     set_page_config()
     set_page_style()
    
