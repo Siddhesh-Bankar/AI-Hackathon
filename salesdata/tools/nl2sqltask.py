@@ -13,6 +13,7 @@ warnings.simplefilter("ignore", ResourceWarning)
 os.environ["OTEL_SDK_DISABLED"] = "true"
 
 from dotenv import load_dotenv
+import streamlit as st
 
 load_dotenv()
 

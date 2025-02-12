@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 import mailersend
 from mailersend import emails
 import mailtrap as mt
+import streamlit as st
 
 load_dotenv()
 

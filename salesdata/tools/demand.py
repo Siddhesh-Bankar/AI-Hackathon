@@ -11,7 +11,7 @@ from langchain_openai import AzureChatOpenAI
 from tools.sendemail import SendEmailTool
 warnings.simplefilter("ignore", ResourceWarning)
 import json
-
+import streamlit as st
 
 os.environ["OTEL_SDK_DISABLED"] = "true"
 
