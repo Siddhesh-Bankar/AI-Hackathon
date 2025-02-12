@@ -21,6 +21,7 @@ def connect_to_sql_server():
         )
         return conn
     except Exception as e:
+        st.write(e)
         print(f"Error connecting to SQL Server: {e}")
         return None    
 
@@ -81,6 +82,7 @@ def authenticate_user(username, password):
             
     except Exception as e:
         print(f"Error authenticating user: {str(e)}")
+        st.write(e)
         return None
 
 
