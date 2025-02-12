@@ -18,6 +18,7 @@ from mailersend import emails
 import mailtrap as mt
 
 load_dotenv()
+
 MAILTRAP_TOKEN=os.getenv("MAILTRAP_TOKEN")
 
 class SendEmailInput(BaseModel):
@@ -36,7 +37,7 @@ class SendEmailTool(BaseTool):
 
             mail = mt.Mail(
                 sender=mt.Address(email="hello@demomailtrap.com", name="Mailtrap Test"),
-                to=[mt.Address(email="sarthakdongre0303@gmail.com")],
+                to=[mt.Address(email="demohackathon894@gmail.com")],
                 subject="Insights",
                 text=message_text,
                 category="Integration Test",

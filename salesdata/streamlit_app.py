@@ -24,13 +24,27 @@ def stream_result(formatted_output):
         time.sleep(0.5)
  
 def login():
-    st.title("Login to Sales Data Insights! 🔑")
+    st.image("assets/bot.gif")
     with st.form(key="login_form"):
+        st.title("Login to Sales Data Insights! 🔑")
+        st.write("")
         username = st.text_input("Username 👤")
+        st.write("")
         password = st.text_input("Password 🔒", type="password")
+        st.write("")
         login_button = st.form_submit_button("Login ➡️")
    
     if login_button:
+        # Required field validation
+        if not username:
+            st.error("Username is required. Please enter a username.")
+            return  # Stop further execution if username is empty
+
+        if not password:
+            st.error("Password is required. Please enter a password.")
+            return  # Stop further execution if password is empty
+
+        # If both username and password are provided, authenticate the user
         if authenticate_user(username, password):
             st.session_state.update({
                 "logged_in": True,
@@ -39,7 +53,7 @@ def login():
                 "show_file_upload": False,
                 "show_chat": True
             })
-            st.success(f"Welcome, {username}! 🎉")
+            # st.success(f"Welcome, {username}! 🎉")
             st.rerun()
         else:
             st.session_state["login_successful"] = False
@@ -49,7 +63,7 @@ def logout():
     """Clears session state and redirects to the login page."""
     st.session_state.clear()
     st.session_state["logged_in"] = False
-    st.success("Logged out successfully! Redirecting to login... 🔄")
+    # st.success("Logged out successfully! Redirecting to login... 🔄")
     time.sleep(1)
     st.rerun()
  
@@ -73,12 +87,8 @@ def setup_sidebar():
                 <div class="avatar">🤖</div>
                 <h1>Sales Agent</h1>
             </div>
-            <div class="feature-list">
-                <div class="feature-item"><span class="icon">🛒</span> <span>Browse File</span></div>
-                <div class="feature-item"><span class="icon">🎯</span> <span>Get personalized recommendations</span></div>
-            </div>
-            <div class="status-card"><div class="status-indicator"></div> <span>Ready to Assist</span></div>
-        </div>""", unsafe_allow_html=True)
+            
+        """, unsafe_allow_html=True)
  
         # ✅ Apply CSS Class to Buttons
        
@@ -92,17 +102,17 @@ def setup_sidebar():
             st.session_state["show_chat"] = True
             st.session_state["show_file_upload"] = False  # Hide File Upload
 
-        if st.button("💬Demand", use_container_width=True, key="demand_chat_btn"):
+        if st.button("💹 Demand", use_container_width=True, key="demand_chat_btn"):
             st.session_state["demand_chat"] = True
             st.session_state["show_file_upload"] = False 
             st.session_state["show_chat"] = False
        
-        st.markdown("---")
  
         if st.button("🔄 Start New Chat", use_container_width=True):
             keys_to_keep = {"logged_in", "username", "login_successful", "show_file_upload", "show_chat"}
             st.session_state = {key: st.session_state[key] for key in keys_to_keep if key in st.session_state}
             st.session_state["messages"] = []  # Clear chat history
+            st.session_state["show_chat"] = True  # Hide Chat
             st.rerun()
        
  
@@ -120,8 +130,8 @@ def handle_file_upload():
         st.subheader("Uploaded CSV Data 📊")
         st.dataframe(csv_data)
         if st.button("Insert into Database 🗃️"):
-            result_message = insert_data_into_database(csv_data, "sales_data")
-            st.success(result_message + " ✅") if "Successfully inserted" in result_message else st.error(result_message + " ❌")
+            result_message = insert_data_into_database(csv_data, "Intelligent4SPTeam.sales_data")
+            st.success(result_message + " ✅") 
 
 def is_valid_query(query):
     query = query.strip().lower()
@@ -181,7 +191,7 @@ def chat_interface():
     if prompt := st.chat_input("Enter your query or command"):
         st.session_state["messages"].append({"role": "user", "content": prompt})
 
-        st.session_state.sales_data=None
+        # st.session_state.sales_data=None
 
         with st.chat_message("user"):
             st.markdown(prompt)
@@ -196,7 +206,7 @@ def chat_interface():
                 else:
                     st.markdown(nl2sqlquery)
                 
-                response = "Data fetched successfully!"
+                response = "Done! Here's your response."
             except Exception as e:
                 response = f"Error fetching data: {e} ❌"
         else:
@@ -220,14 +230,15 @@ def display_sales_data():
             col3.metric("Number of Transactions 🧮", len(sales_data))
        
         if 'region' in sales_data.columns and 'sales' in sales_data.columns:
-            st.subheader("Sales Analysis")
-            fig, ax = plt.subplots(figsize=(8, 6))
-            sns.barplot(x='region', y='sales', data=sales_data, ax=ax, palette="viridis")
-            ax.set_title('Sales by Region 📊', fontsize=16)
-            ax.set_xlabel('Region 🌍', fontsize=12)
-            ax.set_ylabel('Sales 💸', fontsize=12)
+            fig1, ax1 = plt.subplots(figsize=(8, 6))
+            sns.barplot(x='region', y='sales', data=sales_data, ax=ax1, palette="viridis", ci=None)
+            ax1.set_title('Sales by Region ', fontsize=16, fontweight='bold', color='darkblue')
+            ax1.set_xlabel('Region ', fontsize=12, fontweight='bold')
+            ax1.set_ylabel('Sales ', fontsize=12, fontweight='bold')
+            ax1.spines['top'].set_visible(False)
+            ax1.spines['right'].set_visible(False)
             plt.xticks(rotation=45, ha='right')
-            st.pyplot(fig)
+            st.pyplot(fig1)
        
         if st.button("Generate Insights"):
             with st.spinner("Generating insights..."):
@@ -251,8 +262,8 @@ def handle_demand_chat():
             
         if 'demandJson' in st.session_state:
             demand(st.session_state.demandJson);    
-        if st.button("Person"):
-            person()
+        # if st.button("Person"):
+        #     person()
         st.markdown('</div>', unsafe_allow_html=True)
 
 
