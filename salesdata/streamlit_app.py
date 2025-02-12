@@ -16,15 +16,15 @@ from tools.insighttask import getInsights
 from tools.demand import getDemandJson
 from tools.sendemail import SendEmailTool
 
-SCOPES = ['https://www.googleapis.com/auth/gmail.send']
  
 def stream_result(formatted_output):
     for part in formatted_output.split("\n"):
         yield part + "\n"
         time.sleep(0.5)
- 
+img_path = os.path.join(os.path.dirname(__file__), "bot.gif")
+
 def login():
-    st.image("assets/bot.gif")
+    st.image(img_path)
     with st.form(key="login_form"):
         st.title("Login to Sales Data Insights! 🔑")
         st.write("")
@@ -69,13 +69,13 @@ def logout():
  
 def set_page_config():
     st.set_page_config(page_title="Sales Agent", layout="wide", initial_sidebar_state="expanded")
- 
+
+css_path = os.path.join(os.path.dirname(__file__), "style.css")
+
 def set_page_style():
-    st.markdown(f"""
-        <style>
-        {open("assets/style.css").read()}
-        </style>
-    """, unsafe_allow_html=True)
+    with open(css_path, "r") as f:
+        css_content = f.read()
+    st.markdown(f"<style>{css_content}</style>", unsafe_allow_html=True)
  
 def setup_sidebar():
     if not st.session_state.get("logged_in"):
