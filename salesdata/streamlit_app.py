@@ -267,7 +267,7 @@ def handle_demand_chat():
 
             # Display the demand data
             
-        if 'demandJson' in st.session_state and st.session_state['demand_data'] not None:
+        if 'demandJson' in st.session_state and st.session_state['demand_data'] is not None:
             demand(st.session_state['demandJson']);    
         # if st.button("Person"):
         #     person()
