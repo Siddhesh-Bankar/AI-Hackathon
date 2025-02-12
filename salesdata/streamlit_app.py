@@ -262,12 +262,12 @@ def handle_demand_chat():
                     nl2sqlquery = getnl2sqlQuery(prompt)
                     nl2sqlquery = nl2sqlquery.replace("sql", "").strip()
                     st.session_state['demand_data'] = fetch_sales_data(nl2sqlquery)
-                    st.session_state.demandJson = getDemandJson(st.session_state['demand_data'])
+                    st.session_state['demandJson'] = getDemandJson(st.session_state['demand_data'])
 
             # Display the demand data
             
         if 'demandJson' in st.session_state:
-            demand(st.session_state.demandJson);    
+            demand(st.session_state['demandJson']);    
         # if st.button("Person"):
         #     person()
         st.markdown('</div>', unsafe_allow_html=True)
