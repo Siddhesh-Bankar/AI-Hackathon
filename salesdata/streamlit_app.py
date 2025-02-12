@@ -277,11 +277,6 @@ def main():
     
     set_page_config()
     set_page_style()
-    hostname = socket.gethostname()
-    ## getting the IP address using socket.gethostbyname() method
-    ip_address = socket.gethostbyname(hostname)
-    print(ip_address)
-    st.write(ip_address)
     if not st.session_state.get("logged_in"):
         login()
         return

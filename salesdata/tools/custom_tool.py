@@ -63,16 +63,12 @@ def generate_insights(sales_data):
     return {"weekly_trend": weekly_trend, "monthly_trend": monthly_trend}
 
 def authenticate_user(username, password):
-    print("authenticate_user execution started")
-    st.write("authenticate_user execution started")
     """Authenticate a user against the 'users' table in the database."""
     try:
         conn = connect_to_sql_server()
         cursor = conn.cursor()
 
         # Query to fetch user details based on username and password
-        print("Query execution started")
-        st.write("Query execution started")
         query = "SELECT username, password FROM Intelligent4SPTeam.users WHERE username = ? AND password = ?"
         cursor.execute(query, (username, password))
         user = cursor.fetchone()
@@ -81,12 +77,9 @@ def authenticate_user(username, password):
         if user:  # If the user exists in the database
             return {"username": user[0]}  # Return the username (or any other user details)
         else:
-            print("User Not found")
-            st.write("User Not found")
             return None  # No matching user found
             
     except Exception as e:
-        st.write(f"Error authenticating user: {str(e)}")
         print(f"Error authenticating user: {str(e)}")
         return None
 
