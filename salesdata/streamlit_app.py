@@ -149,8 +149,7 @@ def demand(Json):
     st.title("📦 Product Ordering System")
 
     # Initialize session state for tracking orders if not already present
-    if 'orders' not in st.session_state:
-        st.session_state.orders = {}
+
 
     # Loop through products and create order buttons
     for idx, product in enumerate(Json):
