@@ -20,9 +20,9 @@ load_dotenv()
 # os.environ["AZURE_API_KEY"] = os.getenv("AZURE_API_KEY")
 # os.environ["AZURE_API_BASE"] = os.getenv("AZURE_API_BASE")
 # os.environ["AZURE_API_VERSION"] = os.getenv("AZURE_API_VERSION")
-GOOGLE_API_KEY=os.getenv("GOOGLE_API_KEY")
-DB_URI=os.getenv("DB_URI")
-os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
+GOOGLE_API_KEY=st.secrets["GOOGLE_API_KEY"]
+DB_URI=st.secrets["DB_URI"]
+os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
 genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 
 

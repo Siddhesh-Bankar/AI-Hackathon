@@ -19,7 +19,7 @@ import mailtrap as mt
 
 load_dotenv()
 
-MAILTRAP_TOKEN=os.getenv("MAILTRAP_TOKEN")
+MAILTRAP_TOKEN=st.secrets["MAILTRAP_TOKEN"]
 
 class SendEmailInput(BaseModel):
     message_text: str = Field(..., description="Body content of the email")

@@ -18,7 +18,7 @@ os.environ["OTEL_SDK_DISABLED"] = "true"
 from dotenv import load_dotenv
 load_dotenv()
 
-os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
+os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
 genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 
 def clean_query(query):
