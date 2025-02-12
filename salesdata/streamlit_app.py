@@ -257,12 +257,12 @@ def handle_demand_chat():
         st.markdown('<div class="compact-buttons">', unsafe_allow_html=True)
         if st.button("Order"):
             # Fetch and process demand data if not already in session state
-            if 'demand_data' not in st.session_state:
-                with st.spinner("Fetching demand data..."):
-                    nl2sqlquery = getnl2sqlQuery(prompt)
-                    nl2sqlquery = nl2sqlquery.replace("sql", "").strip()
-                    st.session_state['demand_data'] = fetch_sales_data(nl2sqlquery)
-                    st.session_state['demandJson'] = getDemandJson(st.session_state['demand_data'])
+            
+            with st.spinner("Fetching demand data..."):
+                nl2sqlquery = getnl2sqlQuery(prompt)
+                nl2sqlquery = nl2sqlquery.replace("sql", "").strip()
+                st.session_state['demand_data'] = fetch_sales_data(nl2sqlquery)
+                st.session_state['demandJson'] = getDemandJson(st.session_state['demand_data'])
 
             # Display the demand data
             
