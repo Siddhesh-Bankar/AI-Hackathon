@@ -66,9 +66,9 @@ def logout():
     st.session_state.dashboard_redirect = False
     st.session_state.username = None
     st.session_state.login_successful = False
-    st.session_state.sales_data = None  
+    st.session_state['sales_data'] = None  
     st.session_state.query = None  
-    st.session_state.demand_data  = None
+    st.session_state['demand_data']  = None
  
     st.rerun()  
  
@@ -196,7 +196,7 @@ def chat_interface():
     if prompt := st.chat_input("Enter your query or command"):
         st.session_state["messages"].append({"role": "user", "content": prompt})
 
-        # st.session_state.sales_data=None
+        st.session_state['sales_data']=None
 
         with st.chat_message("user"):
             st.markdown(prompt)
@@ -204,10 +204,10 @@ def chat_interface():
         if prompt.strip():
             try:
                 nl2sqlquery = getnl2sqlQuery(prompt)
-                st.session_state.query = nl2sqlquery
+                st.session_state['query'] = nl2sqlquery
                 if is_valid_query(nl2sqlquery):
                     sales_data = fetch_sales_data(nl2sqlquery)
-                    st.session_state.sales_data = sales_data
+                    st.session_state['sales_data'] = sales_data
                 else:
                     st.markdown(nl2sqlquery)
                 
@@ -255,13 +255,12 @@ def handle_demand_chat():
         st.markdown('<div class="compact-buttons">', unsafe_allow_html=True)
         if st.button("Order"):
             # Fetch and process demand data if not already in session state
-            
             if 'demand_data' not in st.session_state:
                 with st.spinner("Fetching demand data..."):
                     nl2sqlquery = getnl2sqlQuery(prompt)
                     nl2sqlquery = nl2sqlquery.replace("sql", "").strip()
-                    st.session_state.demand_data = fetch_sales_data(nl2sqlquery)
-                    st.session_state.demandJson = getDemandJson(st.session_state.demand_data)
+                    st.session_state['demand_data'] = fetch_sales_data(nl2sqlquery)
+                    st.session_state.demandJson = getDemandJson(st.session_state['demand_data'])
 
             # Display the demand data
             
